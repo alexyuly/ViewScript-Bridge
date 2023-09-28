@@ -127,7 +127,7 @@ export const browser = {
     log: (value: any): Output =>
       output("log", {
         K: "r",
-        N: "window.console.log",
+        N: ["window", "console", "log"],
         A: text(value).field,
       }),
   },
