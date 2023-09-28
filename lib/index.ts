@@ -116,17 +116,17 @@ export function condition(value: boolean): BoxedCondition {
     disable: () =>
       output("disable", {
         K: "r",
-        N: `${name}.disable`,
+        N: [name, "disable"],
       }),
     enable: () =>
       output("enable", {
         K: "r",
-        N: `${name}.enable`,
+        N: [name, "enable"],
       }),
     toggle: () =>
       output("toggle", {
         K: "r",
-        N: `${name}.toggle`,
+        N: [name, "toggle"],
       }),
   };
 }
