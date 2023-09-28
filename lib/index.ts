@@ -18,7 +18,7 @@ export type PropertyValue = InputPropertyValue | Output;
 
 export type Properties = Record<string, PropertyValue>;
 
-export type BoxedField<T extends Field = Field> = {
+export type Boxed<T extends Field = Field> = {
   field: T;
 };
 
@@ -45,12 +45,12 @@ export function render(...body: App["B"]): void {
 }
 
 export function isViewElement(
-  statement: BoxedField | Element
+  statement: Boxed | Element
 ): statement is Element {
   return "K" in statement && statement.K === "e";
 }
 
-export function view(...body: Array<BoxedField | Element>): View {
+export function view(...body: Array<Boxed | Element>): View {
   return {
     K: "v",
     N: window.crypto.randomUUID(),
@@ -142,7 +142,7 @@ export function text(value: string): BoxedText {
   };
 }
 
-export function field(value: boolean | string): BoxedCondition | BoxedText {
+export function field(value: boolean | string): Boxed {
   if (typeof value === "boolean") {
     return condition(value);
   }
