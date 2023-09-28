@@ -33,55 +33,51 @@ npm install viewscript-bridge
 ```ts
 import { render, view, element } from "../../lib";
 
-render([
-  view("HelloWorld", [
+render(
+  view(
     element("p", {
       content: "Hello, world!",
-    }),
-  ]),
-]);
+    })
+  )
+);
 ```
 
 ### Log when button clicked
 
 ```ts
-import { render, view, element, set } from "viewscript-bridge";
+import { render, view, element, browser } from "../../lib";
 
-render([
-  view("Log when button clicked", [
+render(
+  view(
     element("button", {
       content: "Click me!",
-      click: set("window.console.log", "You clicked the button."),
-    }),
-  ]),
-]);
+      click: browser.console.log("You clicked the button."),
+    })
+  )
+);
 ```
 
 ### Update section while hovered
 
 ```ts
-import {
-  render,
-  view,
-  condition,
-  element,
-  conditional,
-  get,
-  set,
-} from "viewscript-bridge";
+import { render, view, condition, element, conditional } from "../../lib";
 
-render([
-  view("Update section while hovered", [
-    condition("hovered", false),
+function UpdateSectionWhileHovered() {
+  const hovered = condition(false);
+
+  return view(
+    hovered,
     element("section", {
-      background: conditional(get("hovered"), "black", "white"),
-      color: conditional(get("hovered"), "white", "black"),
-      content: conditional(get("hovered"), "I am hovered.", "Hover me!"),
+      background: conditional(hovered, "black", "white"),
+      color: conditional(hovered, "white", "black"),
+      content: conditional(hovered, "I am hovered.", "Hover me!"),
       font: "24px serif bold",
       padding: "24px",
-      pointerleave: set("hovered.disable"),
-      pointerover: set("hovered.enable"),
-    }),
-  ]),
-]);
+      pointerleave: hovered.disable(),
+      pointerover: hovered.enable(),
+    })
+  );
+}
+
+render(UpdateSectionWhileHovered());
 ```
