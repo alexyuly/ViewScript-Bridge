@@ -14,6 +14,7 @@ import {
 } from "viewscript-runtime";
 
 export type InputPropertyValue = boolean | string | Reference | Conditional;
+
 export type PropertyValue = InputPropertyValue | Output;
 
 export type Properties = Record<string, PropertyValue>;
@@ -157,14 +158,12 @@ export function conditional(
   yes: boolean | string,
   zag: boolean | string
 ): Conditional {
-  const reference: Reference = {
-    K: "r",
-    N: condition.field.N,
-  };
-
   return {
     K: "c",
-    Q: reference,
+    Q: {
+      K: "r",
+      N: condition.field.N,
+    },
     Y: boxed(yes).field,
     Z: boxed(zag).field,
   };
