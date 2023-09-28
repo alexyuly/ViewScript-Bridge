@@ -142,7 +142,7 @@ export function text(value: string): BoxedText {
   };
 }
 
-export function field(value: boolean | string): Boxed {
+export function boxed(value: boolean | string): Boxed {
   if (typeof value === "boolean") {
     return condition(value);
   }
@@ -165,8 +165,8 @@ export function conditional(
   return {
     K: "c",
     Q: reference,
-    Y: field(yes).field,
-    Z: field(zag).field,
+    Y: boxed(yes).field,
+    Z: boxed(zag).field,
   };
 }
 
