@@ -39,12 +39,12 @@ view("HelloWorld", [
 ### Log when button clicked
 
 ```ts
-import { view, element, $ } from "viewscript-bridge";
+import { view, element, ref } from "viewscript-bridge";
 
 view("Log when button clicked", [
   element("button", {
     content: "Click me!",
-    click: $("window.console.log", "You clicked the button."),
+    click: ref("window.console.log", "You clicked the button."),
   }),
 ]);
 ```
@@ -52,18 +52,18 @@ view("Log when button clicked", [
 ### Update section while hovered
 
 ```ts
-import { view, condition, element, conditional, $ } from "viewscript-bridge";
+import { view, element, ref, condition, conditional } from "viewscript-bridge";
 
 view("Update section while hovered", [
   condition("hovered", false),
   element("section", {
-    background: conditional($("hovered"), "black", "white"),
-    color: conditional($("hovered"), "white", "black"),
-    content: conditional($("hovered"), "I am hovered.", "Hover me!"),
+    background: conditional(ref("hovered"), "black", "white"),
+    color: conditional(ref("hovered"), "white", "black"),
+    content: conditional(ref("hovered"), "I am hovered.", "Hover me!"),
     font: "24px serif bold",
     padding: "24px",
-    pointerleave: $("hovered.disable"),
-    pointerover: $("hovered.enable"),
+    pointerleave: ref("hovered.disable"),
+    pointerover: ref("hovered.enable"),
   }),
 ]);
 ```
