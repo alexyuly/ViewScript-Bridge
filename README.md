@@ -31,7 +31,7 @@ npm install viewscript-bridge
 ### HelloWorld
 
 ```ts
-import { render, view, element } from "../../lib";
+import { render, view, element } from "viewscript-bridge";
 
 render(
   view(
@@ -45,7 +45,7 @@ render(
 ### Log when button clicked
 
 ```ts
-import { render, view, element, browser } from "../../lib";
+import { render, view, element, browser } from "viewscript-bridge";
 
 render(
   view(
@@ -60,7 +60,13 @@ render(
 ### Update section while hovered
 
 ```ts
-import { render, view, condition, element, conditional } from "../../lib";
+import {
+  render,
+  view,
+  condition,
+  element,
+  conditional,
+} from "viewscript-bridge";
 
 function UpdateSectionWhileHovered() {
   const hovered = condition(false);
