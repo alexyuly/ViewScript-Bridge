@@ -1,108 +1,25 @@
 import {
   App,
-  Condition,
   Conditional,
   Element,
-  Field,
   Input,
   Output,
   Reference,
-  Text,
   View,
+  isElement,
   isOutput,
   run,
 } from "viewscript-runtime";
 
-export type InputPropertyValue = boolean | string | Reference | Conditional;
-
-export type PropertyValue = InputPropertyValue | Output;
-
-export type Properties = Record<string, PropertyValue>;
-
-export type Boxed<T extends Field = Field> = {
-  field: T;
-};
-
-export type BoxedCondition = {
-  field: Condition;
-  disable: () => Output;
-  enable: () => Output;
-  toggle: () => Output;
-};
-
-export type BoxedText = {
-  field: Text;
-};
+import type {
+  Boxed,
+  BoxedCondition,
+  BoxedText,
+  InputPropertyValue,
+  Properties,
+} from "./types";
 
 export class ViewScriptBridgeError extends Error {}
-
-export function render(...body: App["B"]): void {
-  const app: App = {
-    K: "ViewScript v0.0.0 App",
-    B: body,
-  };
-
-  run(app);
-}
-
-export function isViewElement(
-  statement: Boxed | Element
-): statement is Element {
-  return "K" in statement && statement.K === "e";
-}
-
-export function view(...body: Array<Boxed | Element>): View {
-  return {
-    K: "v",
-    N: window.crypto.randomUUID(),
-    B: body.map((statement) =>
-      isViewElement(statement) ? statement : statement.field
-    ),
-  };
-}
-
-export function input(name: string, value: InputPropertyValue): Input {
-  if (typeof value === "boolean") {
-    return {
-      K: "i",
-      N: name,
-      V: condition(value).field,
-    };
-  }
-  if (typeof value === "string") {
-    return {
-      K: "i",
-      N: name,
-      V: text(value).field,
-    };
-  }
-  return {
-    K: "i",
-    N: name,
-    V: value,
-  };
-}
-
-export function output(name: string, value: Reference): Output {
-  return {
-    K: "o",
-    N: name,
-    V: value,
-  };
-}
-
-export function element(
-  className: Element["C"],
-  properties: Properties
-): Element {
-  return {
-    K: "e",
-    C: className,
-    P: Object.entries(properties).map(([name, value]) =>
-      isOutput(value) ? { K: "o", N: name, V: value.V } : input(name, value)
-    ),
-  };
-}
 
 export function condition(value: boolean): BoxedCondition {
   const name = window.crypto.randomUUID();
@@ -169,12 +86,68 @@ export function conditional(
   };
 }
 
+export function input(name: string, value: InputPropertyValue): Input {
+  if (typeof value === "boolean" || typeof value === "string") {
+    return {
+      K: "i",
+      N: name,
+      V: boxed(value).field,
+    };
+  }
+  return {
+    K: "i",
+    N: name,
+    V: value,
+  };
+}
+
+export function output(name: string, value: Reference): Output {
+  return {
+    K: "o",
+    N: name,
+    V: value,
+  };
+}
+
+export function element(
+  className: Element["C"],
+  properties: Properties
+): Element {
+  return {
+    K: "e",
+    C: className,
+    P: Object.entries(properties).map(([name, value]) =>
+      isOutput(value) ? { K: "o", N: name, V: value.V } : input(name, value)
+    ),
+  };
+}
+
 export const browser = {
   console: {
-    log: (value: any): Reference => ({
-      K: "r",
-      N: "window.console.log",
-      A: text(value).field,
-    }),
+    log: (value: any): Output =>
+      output("log", {
+        K: "r",
+        N: "window.console.log",
+        A: text(value).field,
+      }),
   },
 };
+
+export function view(...body: Array<Boxed | Element>): View {
+  return {
+    K: "v",
+    N: window.crypto.randomUUID(),
+    B: body.map((statement) =>
+      isElement(statement) ? statement : statement.field
+    ),
+  };
+}
+
+export function render(...body: App["B"]): void {
+  const app: App = {
+    K: "ViewScript v0.0.0 App",
+    B: body,
+  };
+
+  run(app);
+}
