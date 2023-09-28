@@ -4,7 +4,9 @@ _ViewScript's TypeScript developer interface_
 
 ## Start
 
-If you're just getting started, then please use the global ViewScript CLI to create a new project:
+**✓ If you're just getting started, then please use the global ViewScript CLI to create a new project.**
+
+This is the recommended way, supported by documentation and examples.
 
 ```
 npm install viewscript --global
@@ -16,7 +18,9 @@ cd YourProjectName
 npm start
 ```
 
-Or, you can add ViewScript-Bridge to an existing project:
+**⚠️ Or, you can add ViewScript-Bridge to an existing project.**
+
+This is not recommended, but you are welcome to experiment as you wish.
 
 ```
 npm install viewscript-bridge
