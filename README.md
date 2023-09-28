@@ -31,43 +31,57 @@ npm install viewscript-bridge
 ### HelloWorld
 
 ```ts
-import { view, element } from "viewscript-bridge";
+import { render, view, element } from "../../lib";
 
-view("HelloWorld", [
-  element("p", {
-    content: "Hello, world!",
-  }),
+render([
+  view("HelloWorld", [
+    element("p", {
+      content: "Hello, world!",
+    }),
+  ]),
 ]);
 ```
 
 ### Log when button clicked
 
 ```ts
-import { view, element, ref } from "viewscript-bridge";
+import { render, view, element, set } from "viewscript-bridge";
 
-view("Log when button clicked", [
-  element("button", {
-    content: "Click me!",
-    click: ref("window.console.log", "You clicked the button."),
-  }),
+render([
+  view("Log when button clicked", [
+    element("button", {
+      content: "Click me!",
+      click: set("window.console.log", "You clicked the button."),
+    }),
+  ]),
 ]);
 ```
 
 ### Update section while hovered
 
 ```ts
-import { view, element, ref, condition, conditional } from "viewscript-bridge";
+import {
+  render,
+  view,
+  condition,
+  element,
+  conditional,
+  get,
+  set,
+} from "viewscript-bridge";
 
-view("Update section while hovered", [
-  condition("hovered", false),
-  element("section", {
-    background: conditional(ref("hovered"), "black", "white"),
-    color: conditional(ref("hovered"), "white", "black"),
-    content: conditional(ref("hovered"), "I am hovered.", "Hover me!"),
-    font: "24px serif bold",
-    padding: "24px",
-    pointerleave: ref("hovered.disable"),
-    pointerover: ref("hovered.enable"),
-  }),
+render([
+  view("Update section while hovered", [
+    condition("hovered", false),
+    element("section", {
+      background: conditional(get("hovered"), "black", "white"),
+      color: conditional(get("hovered"), "white", "black"),
+      content: conditional(get("hovered"), "I am hovered.", "Hover me!"),
+      font: "24px serif bold",
+      padding: "24px",
+      pointerleave: set("hovered.disable"),
+      pointerover: set("hovered.enable"),
+    }),
+  ]),
 ]);
 ```
