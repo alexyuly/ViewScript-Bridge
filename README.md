@@ -1,6 +1,6 @@
 # ViewScript-Bridge
 
-_Source code for the ViewScript Bridge_
+_ViewScript's TypeScript developer interface_
 
 ## Start
 
