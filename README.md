@@ -50,8 +50,9 @@ import { render, view, element, browser } from "viewscript-bridge";
 render(
   view(
     element("button", {
-      content: "Click me!",
       click: browser.console.log("You clicked the button."),
+      content: "Click me!",
+      cursor: "pointer",
     })
   )
 );
@@ -77,6 +78,7 @@ function UpdateSectionWhileHovered() {
       background: conditional(hovered, "black", "white"),
       color: conditional(hovered, "white", "black"),
       content: conditional(hovered, "I am hovered.", "Hover me!"),
+      cursor: "pointer",
       font: "24px serif bold",
       padding: "24px",
       pointerleave: hovered.disable(),
