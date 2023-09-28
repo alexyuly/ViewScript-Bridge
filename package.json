@@ -2,6 +2,7 @@
   "name": "viewscript-bridge",
   "version": "0.0.0",
   "description": "ViewScript's TypeScript developer interface",
+  "main": "index.ts",
   "author": "Alex Yuly",
   "license": "MIT",
   "homepage": "https://github.com/alexyuly/ViewScript-Bridge#readme",
@@ -14,8 +15,6 @@
   },
   "devDependencies": {
     "prettier": "3.0.3",
-    "typescript": "5.2.2",
-    "webpack": "5.88.2",
-    "webpack-cli": "5.1.4"
+    "typescript": "5.2.2"
   }
 }
