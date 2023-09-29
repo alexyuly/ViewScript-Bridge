@@ -1,8 +1,8 @@
 {
   "name": "viewscript-bridge",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "ViewScript's TypeScript Developer Interface",
-  "main": "index.ts",
+  "main": "dist/index.d.ts",
   "author": "Alex Yuly",
   "license": "MIT",
   "homepage": "https://github.com/alexyuly/ViewScript-Bridge#readme",
@@ -10,8 +10,12 @@
     "type": "git",
     "url": "git+ssh://git@github.com/alexyuly/ViewScript-Bridge.git"
   },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
   "dependencies": {
-    "viewscript-runtime": "0.0.0"
+    "viewscript-runtime": "0.0.1"
   },
   "devDependencies": {
     "prettier": "3.0.3",
