@@ -2,4 +2,4 @@
 
 🤝 _ViewScript's TypeScript Developer Interface_
 
-Please see [the main ViewScript readme](https://github.com/alexyuly/ViewScript) for more information.
+Please see [the main ViewScript readme](https://github.com/alexyuly/ViewScript) for usage instructions.
