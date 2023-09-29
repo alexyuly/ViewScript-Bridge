@@ -79,7 +79,7 @@ export function output(name: string, value: Reference): Output {
 export function element(tagName: string, properties: Properties): Element {
   return {
     K: "e",
-    C: tagName,
+    C: `<${tagName}>`,
     P: Object.entries(properties).map(([name, value]) =>
       isOutput(value) ? { K: "o", N: name, V: value.V } : input(name, value)
     ),
