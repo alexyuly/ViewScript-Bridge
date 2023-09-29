@@ -38,7 +38,7 @@ app(
     element("p", {
       content: "Hello, world!",
       font: "18px cursive",
-      margin: "0 0 24px",
+      margin: "24px",
     })
   )
 );
@@ -59,7 +59,7 @@ app(
       content: "Click me!",
       cursor: "pointer",
       "font-size": "18px",
-      margin: "0 0 24px",
+      margin: "24px",
       padding: "12px",
     })
   )
@@ -82,7 +82,7 @@ function UpdateSectionWhileHovered() {
       color: conditional(hovered, "white", "black"),
       content: conditional(hovered, "I am hovered.", "Hover me!"),
       font: "bold 24px serif",
-      margin: "0 0 24px",
+      margin: "24px",
       padding: "24px",
       pointerleave: hovered.disable(),
       pointerover: hovered.enable(),

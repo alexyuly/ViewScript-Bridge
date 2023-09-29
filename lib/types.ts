@@ -13,17 +13,15 @@ export type Boxed<T extends Field = Field> = {
 
 export type BoxedCondition = {
   _field: Condition;
-  disable: () => Output;
-  enable: () => Output;
-  toggle: () => Output;
+  disable: Output;
+  enable: Output;
+  toggle: Output;
 };
 
 export type BoxedText = {
   _field: Text;
 };
 
-export type InputPropertyValue = boolean | string | Reference | Conditional;
+export type Properties = Record<string, UnwrappedInput | Output>;
 
-export type PropertyValue = InputPropertyValue | Output;
-
-export type Properties = Record<string, PropertyValue>;
+export type UnwrappedInput = boolean | string | Reference | Conditional;
