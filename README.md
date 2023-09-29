@@ -31,9 +31,9 @@ npm install viewscript-bridge
 ### HelloWorld
 
 ```ts
-import { render, view, element } from "viewscript-bridge";
+import { app, view, element } from "viewscript-bridge";
 
-render(
+app(
   view(
     element("p", {
       content: "Hello, world!",
@@ -47,9 +47,9 @@ render(
 ### Log when button clicked
 
 ```ts
-import { render, view, element, browser } from "viewscript-bridge";
+import { app, view, element, browser } from "viewscript-bridge";
 
-render(
+app(
   view(
     element("button", {
       background: "whitesmoke",
@@ -70,7 +70,7 @@ render(
 
 ```ts
 import {
-  render,
+  app,
   view,
   condition,
   element,
@@ -96,5 +96,5 @@ function UpdateSectionWhileHovered() {
   );
 }
 
-render(UpdateSectionWhileHovered());
+app(UpdateSectionWhileHovered());
 ```
