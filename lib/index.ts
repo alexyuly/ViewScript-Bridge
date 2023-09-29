@@ -109,10 +109,7 @@ export function output(name: string, value: Reference): Output {
   };
 }
 
-export function element(
-  tagName: Element["C"],
-  properties: Properties
-): Element {
+export function element(tagName: string, properties: Properties): Element {
   return {
     K: "e",
     C: tagName,
@@ -143,7 +140,7 @@ export function view(...body: Array<Boxed | Element>): View {
   };
 }
 
-export function render(...body: App["B"]): void {
+export function app(...body: App["B"]): void {
   const app: App = {
     K: "ViewScript v0.0.0 App",
     B: body,

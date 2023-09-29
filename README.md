@@ -69,13 +69,7 @@ app(
 ### Update section while hovered
 
 ```ts
-import {
-  app,
-  view,
-  condition,
-  element,
-  conditional,
-} from "viewscript-bridge";
+import { app, view, condition, element, conditional } from "viewscript-bridge";
 
 function UpdateSectionWhileHovered() {
   const hovered = condition(false);
