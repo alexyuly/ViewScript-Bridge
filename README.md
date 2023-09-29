@@ -37,6 +37,7 @@ render(
   view(
     element("p", {
       content: "Hello, world!",
+      margin: "0 0 24px",
     })
   )
 );
@@ -53,6 +54,7 @@ render(
       click: browser.console.log("You clicked the button."),
       content: "Click me!",
       cursor: "pointer",
+      margin: "0 0 24px",
     })
   )
 );
@@ -76,10 +78,12 @@ function UpdateSectionWhileHovered() {
     hovered,
     element("section", {
       background: conditional(hovered, "black", "white"),
+      border: "1px solid black",
       color: conditional(hovered, "white", "black"),
       content: conditional(hovered, "I am hovered.", "Hover me!"),
       cursor: "pointer",
       font: "24px serif bold",
+      margin: "0 0 24px",
       padding: "24px",
       pointerleave: hovered.disable(),
       pointerover: hovered.enable(),
