@@ -37,6 +37,7 @@ render(
   view(
     element("p", {
       content: "Hello, world!",
+      font: "18px cursive",
       margin: "0 0 24px",
     })
   )
@@ -51,10 +52,15 @@ import { render, view, element, browser } from "viewscript-bridge";
 render(
   view(
     element("button", {
+      background: "whitesmoke",
+      border: "1px solid gainsboro",
+      "border-radius": "4px",
       click: browser.console.log("You clicked the button."),
       content: "Click me!",
       cursor: "pointer",
+      "font-size": "18px",
       margin: "0 0 24px",
+      padding: "12px",
     })
   )
 );
@@ -80,9 +86,8 @@ function UpdateSectionWhileHovered() {
       background: conditional(hovered, "black", "white"),
       border: "1px solid black",
       color: conditional(hovered, "white", "black"),
-      content: conditional(hovered, "I am hovered.", "Hover me!"),
-      cursor: "pointer",
-      font: "24px serif bold",
+      content: conditional(hovered, "I am hovered.", "Hover me!"), // TODO Fix issue where text is absent before hovering.
+      font: "bold 24px serif",
       margin: "0 0 24px",
       padding: "24px",
       pointerleave: hovered.disable(),
