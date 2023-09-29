@@ -1,4 +1,5 @@
 import {
+  App,
   Conditional,
   Element,
   Input,
@@ -91,7 +92,7 @@ export const browser = {
     log: (value: any): Output =>
       output("log", {
         K: "r",
-        N: ["window", "console", "log"],
+        N: ["browser", "console", "log"],
         A: boxed(value)._field,
       }),
   },
@@ -108,5 +109,8 @@ export function view(...body: Array<Boxed | Element>): View {
 }
 
 export function app(view: View): void {
-  new RunnableApp({ K: "ViewScript v0.0.0 App", B: [view] });
+  const app: App = { K: "ViewScript v0.0.0 App", B: [view] };
+  window.console.log(`[VSB] 🍏 app compiled`, JSON.stringify(app));
+
+  new RunnableApp(app);
 }
