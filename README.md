@@ -86,7 +86,7 @@ function UpdateSectionWhileHovered() {
       background: conditional(hovered, "black", "white"),
       border: "1px solid black",
       color: conditional(hovered, "white", "black"),
-      content: conditional(hovered, "I am hovered.", "Hover me!"), // TODO Fix issue where text is absent before hovering.
+      content: conditional(hovered, "I am hovered.", "Hover me!"),
       font: "bold 24px serif",
       margin: "0 0 24px",
       padding: "24px",
