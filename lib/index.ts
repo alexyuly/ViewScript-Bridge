@@ -25,7 +25,7 @@ export function condition(value: boolean): BoxedCondition {
   const name = window.crypto.randomUUID();
 
   return {
-    field: {
+    _field: {
       K: "f",
       N: name,
       C: "Condition",
@@ -51,7 +51,7 @@ export function condition(value: boolean): BoxedCondition {
 
 export function text(value: string): BoxedText {
   return {
-    field: {
+    _field: {
       K: "f",
       N: window.crypto.randomUUID(),
       C: "Text",
@@ -79,10 +79,10 @@ export function conditional(
     K: "c",
     Q: {
       K: "r",
-      N: condition.field.N,
+      N: condition._field.N,
     },
-    Y: boxed(yes).field,
-    Z: boxed(zag).field,
+    Y: boxed(yes)._field,
+    Z: boxed(zag)._field,
   };
 }
 
@@ -91,7 +91,7 @@ export function input(name: string, value: InputPropertyValue): Input {
     return {
       K: "i",
       N: name,
-      V: boxed(value).field,
+      V: boxed(value)._field,
     };
   }
   return {
@@ -110,12 +110,12 @@ export function output(name: string, value: Reference): Output {
 }
 
 export function element(
-  className: Element["C"],
+  tagName: Element["C"],
   properties: Properties
 ): Element {
   return {
     K: "e",
-    C: className,
+    C: tagName,
     P: Object.entries(properties).map(([name, value]) =>
       isOutput(value) ? { K: "o", N: name, V: value.V } : input(name, value)
     ),
@@ -128,7 +128,7 @@ export const browser = {
       output("log", {
         K: "r",
         N: ["window", "console", "log"],
-        A: text(value).field,
+        A: boxed(value)._field,
       }),
   },
 };
@@ -138,7 +138,7 @@ export function view(...body: Array<Boxed | Element>): View {
     K: "v",
     N: window.crypto.randomUUID(),
     B: body.map((statement) =>
-      isElement(statement) ? statement : statement.field
+      isElement(statement) ? statement : statement._field
     ),
   };
 }

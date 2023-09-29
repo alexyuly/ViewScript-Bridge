@@ -8,18 +8,18 @@ import type {
 } from "viewscript-runtime";
 
 export type Boxed<T extends Field = Field> = {
-  field: T;
+  _field: T;
 };
 
 export type BoxedCondition = {
-  field: Condition;
+  _field: Condition;
   disable: () => Output;
   enable: () => Output;
   toggle: () => Output;
 };
 
 export type BoxedText = {
-  field: Text;
+  _field: Text;
 };
 
 export type InputPropertyValue = boolean | string | Reference | Conditional;
