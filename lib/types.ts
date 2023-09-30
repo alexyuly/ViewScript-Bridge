@@ -1,6 +1,8 @@
 import type {
   Condition,
   Conditional,
+  Element,
+  ElementField,
   Field,
   Output,
   Reference,
@@ -18,10 +20,19 @@ export type BoxedCondition = {
   toggle: Output;
 };
 
+export type BoxedElement = {
+  _field: ElementField;
+};
+
 export type BoxedText = {
   _field: Text;
 };
 
 export type Properties = Record<string, UnwrappedInput | Output>;
 
-export type UnwrappedInput = boolean | string | Reference | Conditional;
+export type UnwrappedInput =
+  | boolean
+  | string
+  | Element
+  | Reference
+  | Conditional;

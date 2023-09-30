@@ -5,7 +5,7 @@ import {
   Input,
   Output,
   Reference,
-  RunnableApp,
+  RunningApp,
   View,
   isElement,
   isOutput,
@@ -14,6 +14,7 @@ import {
 import type {
   Boxed,
   BoxedCondition,
+  BoxedElement,
   BoxedText,
   Properties,
   UnwrappedInput,
@@ -32,6 +33,14 @@ export function condition(value: boolean): BoxedCondition {
   };
 }
 
+export function elementField(value: Element): BoxedElement {
+  const name = window.crypto.randomUUID();
+
+  return {
+    _field: { K: "f", N: name, C: "Element", V: value },
+  };
+}
+
 export function text(value: string): BoxedText {
   const name = window.crypto.randomUUID();
 
@@ -40,13 +49,17 @@ export function text(value: string): BoxedText {
   };
 }
 
-export function boxed(value: boolean | string): Boxed {
+export function boxed(value: boolean | string | Element): Boxed {
   if (typeof value === "boolean") {
     return condition(value);
   }
 
   if (typeof value === "string") {
     return text(value);
+  }
+
+  if (isElement(value)) {
+    return elementField(value);
   }
 
   throw new ViewScriptBridgeError(`Cannot make field from value: ${value}`);
@@ -66,7 +79,11 @@ export function conditional(
 }
 
 export function input(name: string, value: UnwrappedInput): Input {
-  if (typeof value === "boolean" || typeof value === "string") {
+  if (
+    typeof value === "boolean" ||
+    typeof value === "string" ||
+    isElement(value)
+  ) {
     return { K: "i", N: name, V: boxed(value)._field };
   }
 
@@ -110,7 +127,7 @@ export function view(...body: Array<Boxed | Element>): View {
 
 export function app(view: View): void {
   const app: App = { K: "ViewScript v0.0.4 App", B: [view] };
-  window.console.log(`[VSB] 🍏 App compiled:`, JSON.stringify(app));
+  window.console.log(`[VSB] 🍏 This app is compiled:`, JSON.stringify(app));
 
-  new RunnableApp(app);
+  new RunningApp(app);
 }
