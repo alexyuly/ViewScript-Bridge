@@ -26,10 +26,10 @@ export function condition(value: boolean): BoxedCondition {
   const name = window.crypto.randomUUID();
 
   return {
-    _field: { K: "f", N: name, C: "Condition", V: value },
-    disable: output("disable", { K: "r", N: [name, "disable"] }),
-    enable: output("enable", { K: "r", N: [name, "enable"] }),
-    toggle: output("toggle", { K: "r", N: [name, "toggle"] }),
+    _field: { kind: "field", name, model: "Condition", value },
+    disable: output("disable", { kind: "reference", name: [name, "disable"] }),
+    enable: output("enable", { kind: "reference", name: [name, "enable"] }),
+    toggle: output("toggle", { kind: "reference", name: [name, "toggle"] }),
   };
 }
 
@@ -37,7 +37,7 @@ export function elementField(value: Element): BoxedElement {
   const name = window.crypto.randomUUID();
 
   return {
-    _field: { K: "f", N: name, C: "Element", V: value },
+    _field: { kind: "field", name, model: "Element", value },
   };
 }
 
@@ -45,7 +45,7 @@ export function text(value: string): BoxedText {
   const name = window.crypto.randomUUID();
 
   return {
-    _field: { K: "f", N: name, C: "Text", V: value },
+    _field: { kind: "field", name, model: "Text", value },
   };
 }
 
@@ -67,14 +67,14 @@ export function boxed(value: boolean | string | Element): Boxed {
 
 export function conditional(
   condition: BoxedCondition,
-  yes: boolean | string,
-  zag: boolean | string
+  positive: boolean | string,
+  negative: boolean | string
 ): Conditional {
   return {
-    K: "c",
-    Q: { K: "r", N: condition._field.N },
-    Y: boxed(yes)._field,
-    Z: boxed(zag)._field,
+    kind: "conditional",
+    condition: { kind: "reference", name: condition._field.name },
+    positive: boxed(positive)._field,
+    negative: boxed(negative)._field,
   };
 }
 
@@ -84,22 +84,24 @@ export function input(name: string, value: UnwrappedInput): Input {
     typeof value === "string" ||
     isElement(value)
   ) {
-    return { K: "i", N: name, V: boxed(value)._field };
+    return { kind: "input", name, value: boxed(value)._field };
   }
 
-  return { K: "i", N: name, V: value };
+  return { kind: "input", name, value };
 }
 
 export function output(name: string, value: Reference): Output {
-  return { K: "o", N: name, V: value };
+  return { kind: "output", name, value };
 }
 
 export function element(tagName: string, properties: Properties): Element {
   return {
-    K: "e",
-    C: `<${tagName}>`,
-    P: Object.entries(properties).map(([name, value]) =>
-      isOutput(value) ? { K: "o", N: name, V: value.V } : input(name, value)
+    kind: "element",
+    view: `<${tagName}>`,
+    properties: Object.entries(properties).map(([name, value]) =>
+      isOutput(value)
+        ? { kind: "output", name, value: value.value }
+        : input(name, value)
     ),
   };
 }
@@ -108,25 +110,25 @@ export const browser = {
   console: {
     log: (value: any): Output =>
       output("log", {
-        K: "r",
-        N: ["browser", "console", "log"],
-        A: boxed(value)._field,
+        kind: "reference",
+        name: ["browser", "console", "log"],
+        argument: boxed(value)._field,
       }),
   },
 };
 
 export function view(...body: Array<Boxed | Element>): View {
   return {
-    K: "v",
-    N: window.crypto.randomUUID(),
-    B: body.map((statement) =>
+    kind: "view",
+    name: window.crypto.randomUUID(),
+    body: body.map((statement) =>
       isElement(statement) ? statement : statement._field
     ),
   };
 }
 
 export function app(view: View): void {
-  const app: App = { K: "ViewScript v0.0.4 App", B: [view] };
+  const app: App = { kind: "ViewScript v0.0.4 App", body: [view] };
   window.console.log(`[VSB] 🍏 This app is compiled:`, JSON.stringify(app));
 
   new RunningApp(app);
