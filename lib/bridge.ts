@@ -109,7 +109,7 @@ export function view(...body: Array<Boxed | Element>): View {
 }
 
 export function app(view: View): void {
-  const app: App = { K: "ViewScript v0.0.1 App", B: [view] };
+  const app: App = { K: "ViewScript v0.0.4 App", B: [view] };
   window.console.log(`[VSB] 🍏 App compiled:`, JSON.stringify(app));
 
   new RunnableApp(app);

@@ -1,6 +1,6 @@
 {
   "name": "viewscript-bridge",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "ViewScript's TypeScript Developer Interface",
   "main": "dist/index.js",
   "author": "Alex Yuly",
@@ -14,11 +14,11 @@
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },
+  "dependencies": {
+    "viewscript-runtime": "0.0.4"
+  },
   "devDependencies": {
     "prettier": "3.0.3",
     "typescript": "5.2.2"
-  },
-  "dependencies": {
-    "viewscript-runtime": "0.0.3"
   }
 }
