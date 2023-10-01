@@ -14,6 +14,7 @@ import {
 import type {
   Boxed,
   BoxedCondition,
+  BoxedCount,
   BoxedElement,
   BoxedText,
   Properties,
@@ -33,6 +34,20 @@ export function condition(value: boolean): BoxedCondition {
   };
 }
 
+export function count(value: number): BoxedCount {
+  const name = window.crypto.randomUUID();
+
+  return {
+    _field: { kind: "field", name, model: "Count", value },
+    add: (amount: number) =>
+      output("add", {
+        kind: "reference",
+        name: [name, "add"],
+        argument: count(amount)._field,
+      }),
+  };
+}
+
 export function text(value: string): BoxedText {
   const name = window.crypto.randomUUID();
 
@@ -49,9 +64,13 @@ export function elementField(value: Element): BoxedElement {
   };
 }
 
-export function boxed(value: boolean | string | Element): Boxed {
+export function boxed(value: boolean | number | string | Element): Boxed {
   if (typeof value === "boolean") {
     return condition(value);
+  }
+
+  if (typeof value === "number") {
+    return count(value);
   }
 
   if (typeof value === "string") {
@@ -67,8 +86,8 @@ export function boxed(value: boolean | string | Element): Boxed {
 
 export function conditional(
   condition: BoxedCondition,
-  positive: boolean | string,
-  negative: boolean | string
+  positive: boolean | number | string,
+  negative: boolean | number | string
 ): Conditional {
   return {
     kind: "conditional",
@@ -81,13 +100,21 @@ export function conditional(
 export function input(name: string, value: UnwrappedInput): Input {
   if (
     typeof value === "boolean" ||
+    typeof value === "number" ||
     typeof value === "string" ||
     isElement(value)
   ) {
     return { kind: "input", name, value: boxed(value)._field };
   }
 
-  return { kind: "input", name, value };
+  return {
+    kind: "input",
+    name,
+    value:
+      "_field" in value
+        ? { kind: "reference", name: value._field.name }
+        : value,
+  };
 }
 
 export function output(name: string, value: Reference): Output {

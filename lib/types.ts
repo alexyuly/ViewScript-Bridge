@@ -1,6 +1,7 @@
 import type {
   Condition,
   Conditional,
+  Count,
   Element,
   ElementField,
   Field,
@@ -13,26 +14,26 @@ export type Boxed<T extends Field = Field> = {
   _field: T;
 };
 
-export type BoxedCondition = {
-  _field: Condition;
+export type BoxedCondition = Boxed<Condition> & {
   disable: Output;
   enable: Output;
   toggle: Output;
 };
 
-export type BoxedElement = {
-  _field: ElementField;
+export type BoxedCount = Boxed<Count> & {
+  add: (amount: number) => Output;
 };
 
-export type BoxedText = {
-  _field: Text;
-};
+export type BoxedText = Boxed<Text>;
 
-export type Properties = Record<string, UnwrappedInput | Output>;
+export type BoxedElement = Boxed<ElementField>;
 
 export type UnwrappedInput =
   | boolean
+  | number
   | string
   | Element
-  | Reference
+  | Boxed
   | Conditional;
+
+export type Properties = Record<string, UnwrappedInput | Output>;
