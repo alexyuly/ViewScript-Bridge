@@ -85,6 +85,10 @@ export function handle(value: boolean | number | string | Element): Handle {
   throw new ViewScriptBridgeError(`Cannot make field from value: ${value}`);
 }
 
+export function reference(handle: Handle): Reference {
+  return { kind: "reference", name: handle._field.name };
+}
+
 export function conditional(
   condition: ConditionHandle,
   positive: boolean | number | string,
@@ -92,7 +96,7 @@ export function conditional(
 ): Conditional {
   return {
     kind: "conditional",
-    condition: { kind: "reference", name: condition._field.name },
+    condition: reference(condition),
     positive: handle(positive)._field,
     negative: handle(negative)._field,
   };
@@ -111,9 +115,7 @@ export function input(name: string, value: UnwrappedInput): Input {
   return {
     kind: "input",
     name,
-    value: isHandle(value)
-      ? { kind: "reference", name: value._field.name }
-      : value,
+    value: isHandle(value) ? reference(value) : value,
   };
 }
 
