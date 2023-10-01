@@ -11,19 +11,20 @@ import {
   isOutput,
 } from "viewscript-runtime";
 
-import type {
-  Boxed,
-  BoxedCondition,
-  BoxedCount,
-  BoxedElement,
-  BoxedText,
+import {
+  ConditionHandle,
+  CountHandle,
+  ElementHandle,
+  Handle,
   Properties,
+  TextHandle,
   UnwrappedInput,
+  isHandle,
 } from "./types";
 
 export class ViewScriptBridgeError extends Error {}
 
-export function condition(value: boolean): BoxedCondition {
+export function condition(value: boolean): ConditionHandle {
   const name = window.crypto.randomUUID();
 
   return {
@@ -34,7 +35,7 @@ export function condition(value: boolean): BoxedCondition {
   };
 }
 
-export function count(value: number): BoxedCount {
+export function count(value: number): CountHandle {
   const name = window.crypto.randomUUID();
 
   return {
@@ -48,7 +49,7 @@ export function count(value: number): BoxedCount {
   };
 }
 
-export function text(value: string): BoxedText {
+export function text(value: string): TextHandle {
   const name = window.crypto.randomUUID();
 
   return {
@@ -56,7 +57,7 @@ export function text(value: string): BoxedText {
   };
 }
 
-export function elementField(value: Element): BoxedElement {
+export function elementField(value: Element): ElementHandle {
   const name = window.crypto.randomUUID();
 
   return {
@@ -64,7 +65,7 @@ export function elementField(value: Element): BoxedElement {
   };
 }
 
-export function boxed(value: boolean | number | string | Element): Boxed {
+export function handle(value: boolean | number | string | Element): Handle {
   if (typeof value === "boolean") {
     return condition(value);
   }
@@ -85,15 +86,15 @@ export function boxed(value: boolean | number | string | Element): Boxed {
 }
 
 export function conditional(
-  condition: BoxedCondition,
+  condition: ConditionHandle,
   positive: boolean | number | string,
   negative: boolean | number | string
 ): Conditional {
   return {
     kind: "conditional",
     condition: { kind: "reference", name: condition._field.name },
-    positive: boxed(positive)._field,
-    negative: boxed(negative)._field,
+    positive: handle(positive)._field,
+    negative: handle(negative)._field,
   };
 }
 
@@ -104,16 +105,15 @@ export function input(name: string, value: UnwrappedInput): Input {
     typeof value === "string" ||
     isElement(value)
   ) {
-    return { kind: "input", name, value: boxed(value)._field };
+    return { kind: "input", name, value: handle(value)._field };
   }
 
   return {
     kind: "input",
     name,
-    value:
-      "_field" in value
-        ? { kind: "reference", name: value._field.name }
-        : value,
+    value: isHandle(value)
+      ? { kind: "reference", name: value._field.name }
+      : value,
   };
 }
 
@@ -139,12 +139,12 @@ export const browser = {
       output("log", {
         kind: "reference",
         name: ["browser", "console", "log"],
-        argument: boxed(value)._field,
+        argument: handle(value)._field,
       }),
   },
 };
 
-export function view(...body: Array<Boxed | Element>): View {
+export function view(...body: Array<Handle | Element>): View {
   return {
     kind: "view",
     name: window.crypto.randomUUID(),
