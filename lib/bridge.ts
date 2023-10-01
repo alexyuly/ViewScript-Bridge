@@ -33,19 +33,19 @@ export function condition(value: boolean): BoxedCondition {
   };
 }
 
-export function elementField(value: Element): BoxedElement {
-  const name = window.crypto.randomUUID();
-
-  return {
-    _field: { kind: "field", name, model: "Element", value },
-  };
-}
-
 export function text(value: string): BoxedText {
   const name = window.crypto.randomUUID();
 
   return {
     _field: { kind: "field", name, model: "Text", value },
+  };
+}
+
+export function elementField(value: Element): BoxedElement {
+  const name = window.crypto.randomUUID();
+
+  return {
+    _field: { kind: "field", name, model: "Element", value },
   };
 }
 
