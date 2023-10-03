@@ -158,7 +158,7 @@ export function view(...body: Array<Handle | Element>): View {
 
 export function app(view: View): void {
   const app: App = { kind: "ViewScript v0.1.0 App", body: [view] };
-  window.console.log(`[VSB] 🌎 Build app:`, JSON.stringify(app));
+  window.console.log(`[VSB] 🌎 Build app:`, app);
 
   new RunningApp(app);
 }
