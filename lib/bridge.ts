@@ -12,10 +12,12 @@ import {
 } from "viewscript-runtime";
 
 import {
+  CollectionHandle,
   ConditionHandle,
   CountHandle,
   ElementHandle,
   Handle,
+  Primitive,
   Properties,
   TextHandle,
   UnwrappedInput,
@@ -23,6 +25,14 @@ import {
 } from "./types";
 
 export class ViewScriptBridgeError extends Error {}
+
+export function collection(value: Array<unknown>): CollectionHandle {
+  const name = window.crypto.randomUUID();
+
+  return {
+    _field: { kind: "field", name, model: "Collection", value },
+  };
+}
 
 export function condition(value: boolean): ConditionHandle {
   const name = window.crypto.randomUUID();
@@ -65,7 +75,7 @@ export function elementField(value: Element): ElementHandle {
   };
 }
 
-export function handle(value: boolean | number | string | Element): Handle {
+export function handle(value: Primitive): Handle {
   if (typeof value === "boolean") {
     return condition(value);
   }
@@ -82,21 +92,21 @@ export function handle(value: boolean | number | string | Element): Handle {
     return elementField(value);
   }
 
-  throw new ViewScriptBridgeError(`Cannot make field from value: ${value}`);
-}
+  if (value instanceof Array) {
+    return collection(value);
+  }
 
-export function reference(handle: Handle): Reference {
-  return { kind: "reference", name: handle._field.name };
+  throw new ViewScriptBridgeError(`Cannot make field from value: ${value}`);
 }
 
 export function conditional(
   condition: ConditionHandle,
-  positive: boolean | number | string,
-  negative: boolean | number | string
+  positive: Primitive,
+  negative: Primitive
 ): Conditional {
   return {
     kind: "conditional",
-    condition: reference(condition),
+    condition: { kind: "reference", name: condition._field.name },
     positive: handle(positive)._field,
     negative: handle(negative)._field,
   };
@@ -107,7 +117,8 @@ export function input(name: string, value: UnwrappedInput): Input {
     typeof value === "boolean" ||
     typeof value === "number" ||
     typeof value === "string" ||
-    isElement(value)
+    isElement(value) ||
+    value instanceof Array
   ) {
     return { kind: "input", name, value: handle(value)._field };
   }
@@ -115,7 +126,9 @@ export function input(name: string, value: UnwrappedInput): Input {
   return {
     kind: "input",
     name,
-    value: isHandle(value) ? reference(value) : value,
+    value: isHandle(value)
+      ? { kind: "reference", name: value._field.name }
+      : value,
   };
 }
 

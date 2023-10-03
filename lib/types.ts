@@ -1,4 +1,5 @@
 import type {
+  Collection,
   Condition,
   Conditional,
   Count,
@@ -27,13 +28,11 @@ export type TextHandle = Handle<Text>;
 
 export type ElementHandle = Handle<ElementField>;
 
-export type UnwrappedInput =
-  | boolean
-  | number
-  | string
-  | Element
-  | Handle
-  | Conditional;
+export type CollectionHandle = Handle<Collection>;
+
+export type Primitive = boolean | number | string | Element | Array<unknown>;
+
+export type UnwrappedInput = Primitive | Handle | Conditional;
 
 export type Properties = Record<string, UnwrappedInput | Output>;
 
