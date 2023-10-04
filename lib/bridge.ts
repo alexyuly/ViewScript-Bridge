@@ -17,11 +17,12 @@ import {
   CountHandle,
   ElementHandle,
   Handle,
+  InputValue,
   Primitive,
   Properties,
   TextHandle,
-  UnwrappedInput,
   isHandle,
+  isPrimitive,
 } from "./types";
 
 export class ViewScriptBridgeError extends Error {}
@@ -50,7 +51,7 @@ export function count(value: number): CountHandle {
 
   return {
     _field: { kind: "field", name, model: "Count", value },
-    add: (amount: number) =>
+    add: (amount: number): Output =>
       output("add", {
         kind: "reference",
         name: [name, "add"],
@@ -112,14 +113,8 @@ export function conditional(
   };
 }
 
-export function input(name: string, value: UnwrappedInput): Input {
-  if (
-    typeof value === "boolean" ||
-    typeof value === "number" ||
-    typeof value === "string" ||
-    isElement(value) ||
-    value instanceof Array
-  ) {
+export function input(name: string, value: InputValue): Input {
+  if (isPrimitive(value)) {
     return { kind: "input", name, value: handle(value)._field };
   }
 
