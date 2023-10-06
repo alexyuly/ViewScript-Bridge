@@ -188,7 +188,7 @@ export function view(element: Element, fields?: Record<string, Handle>): View {
 }
 
 export function app(view: View): void {
-  const app: App = { kind: "ViewScript v0.2.0 App", view };
+  const app: App = { kind: "ViewScript v0.2.1 App", view };
   window.console.log(`[VSB] 🌎 Build app:`, app);
 
   new RunningApp(app);
