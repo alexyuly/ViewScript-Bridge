@@ -2,6 +2,7 @@ import {
   App,
   Conditional,
   Element,
+  Field,
   Input,
   Output,
   Reference,
@@ -27,52 +28,62 @@ import {
 
 export class ViewScriptBridgeError extends Error {}
 
-export function collection(value: Array<unknown>): CollectionHandle {
-  const name = window.crypto.randomUUID();
-
-  return {
-    _field: { kind: "field", name, model: "Collection", value },
-  };
-}
-
 export function condition(value: boolean): ConditionHandle {
-  const name = window.crypto.randomUUID();
+  const fieldKey = window.crypto.randomUUID();
 
   return {
-    _field: { kind: "field", name, model: "Condition", value },
-    disable: output("disable", { kind: "reference", name: [name, "disable"] }),
-    enable: output("enable", { kind: "reference", name: [name, "enable"] }),
-    toggle: output("toggle", { kind: "reference", name: [name, "toggle"] }),
+    _field: {
+      kind: "field",
+      fieldKey,
+      modelKey: "Condition",
+      value,
+    },
+    disable: output({ kind: "reference", keyPath: [fieldKey, "disable"] }),
+    enable: output({ kind: "reference", keyPath: [fieldKey, "enable"] }),
+    toggle: output({ kind: "reference", keyPath: [fieldKey, "toggle"] }),
   };
 }
 
 export function count(value: number): CountHandle {
-  const name = window.crypto.randomUUID();
+  const fieldKey = window.crypto.randomUUID();
 
   return {
-    _field: { kind: "field", name, model: "Count", value },
+    _field: { kind: "field", fieldKey, modelKey: "Count", value },
     add: (amount: number): Output =>
-      output("add", {
+      output({
         kind: "reference",
-        name: [name, "add"],
-        argument: count(amount)._field,
+        keyPath: [fieldKey, "add"],
+        argumentBinding: count(amount)._field,
       }),
   };
 }
 
 export function text(value: string): TextHandle {
-  const name = window.crypto.randomUUID();
+  const fieldKey = window.crypto.randomUUID();
 
   return {
-    _field: { kind: "field", name, model: "Text", value },
+    _field: { kind: "field", fieldKey, modelKey: "Text", value },
   };
 }
 
 export function elementField(value: Element): ElementHandle {
-  const name = window.crypto.randomUUID();
+  const fieldKey = window.crypto.randomUUID();
 
   return {
-    _field: { kind: "field", name, model: "Element", value },
+    _field: { kind: "field", fieldKey, modelKey: "Element", value },
+  };
+}
+
+export function collection(value: Array<unknown>): CollectionHandle {
+  const fieldKey = window.crypto.randomUUID();
+
+  return {
+    _field: {
+      kind: "field",
+      fieldKey,
+      modelKey: "Collection",
+      value,
+    },
   };
 }
 
@@ -107,38 +118,41 @@ export function conditional(
 ): Conditional {
   return {
     kind: "conditional",
-    condition: { kind: "reference", name: condition._field.name },
+    condition: { kind: "reference", keyPath: [condition._field.fieldKey] },
     positive: handle(positive)._field,
     negative: handle(negative)._field,
   };
 }
 
-export function input(name: string, value: InputValue): Input {
+export function input(value: InputValue): Input {
   if (isPrimitive(value)) {
-    return { kind: "input", name, value: handle(value)._field };
+    return { kind: "input", dataBinding: handle(value)._field };
   }
 
   return {
     kind: "input",
-    name,
-    value: isHandle(value)
-      ? { kind: "reference", name: value._field.name }
+    dataBinding: isHandle(value)
+      ? { kind: "reference", keyPath: [value._field.fieldKey] }
       : value,
   };
 }
 
-export function output(name: string, value: Reference): Output {
-  return { kind: "output", name, value };
+export function output(dataBinding: Reference): Output {
+  return { kind: "output", dataBinding };
 }
 
 export function element(tagName: string, properties: Properties): Element {
   return {
     kind: "element",
-    view: `<${tagName}>`,
-    properties: Object.entries(properties).map(([name, value]) =>
-      isOutput(value)
-        ? { kind: "output", name, value: value.value }
-        : input(name, value)
+    viewKey: `<${tagName}>`,
+    properties: Object.entries(properties).reduce(
+      (result, [propertyKey, property]) => {
+        result[propertyKey] = isOutput(property)
+          ? output(property.dataBinding)
+          : input(property);
+        return result;
+      },
+      {} as Element["properties"]
     ),
   };
 }
@@ -146,26 +160,41 @@ export function element(tagName: string, properties: Properties): Element {
 export const browser = {
   console: {
     log: (value: any): Output =>
-      output("log", {
+      output({
         kind: "reference",
-        name: ["browser", "console", "log"],
-        argument: handle(value)._field,
+        keyPath: ["browser", "console", "log"],
+        argumentBinding: handle(value)._field,
       }),
   },
 };
 
-export function view(...body: Array<Handle | Element>): View {
+export function view({
+  fields,
+  element,
+}: {
+  fields?: Record<string, Handle>;
+  element: Element;
+}): View {
   return {
     kind: "view",
-    name: window.crypto.randomUUID(),
-    body: body.map((statement) =>
-      isElement(statement) ? statement : statement._field
-    ),
+    element,
+    fields:
+      fields &&
+      Object.entries(fields).reduce(
+        (result, [name, handle]) => {
+          result[handle._field.fieldKey] = {
+            ...handle._field,
+            name,
+          };
+          return result;
+        },
+        {} as Record<string, Field>
+      ),
   };
 }
 
 export function app(view: View): void {
-  const app: App = { kind: "ViewScript v0.2.0 App", body: [view] };
+  const app: App = { kind: "ViewScript v0.2.0 App", view };
   window.console.log(`[VSB] 🌎 Build app:`, app);
 
   new RunningApp(app);
