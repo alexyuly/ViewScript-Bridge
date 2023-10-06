@@ -168,13 +168,7 @@ export const browser = {
   },
 };
 
-export function view({
-  fields,
-  element,
-}: {
-  fields?: Record<string, Handle>;
-  element: Element;
-}): View {
+export function view(element: Element, fields?: Record<string, Handle>): View {
   return {
     kind: "view",
     element,
