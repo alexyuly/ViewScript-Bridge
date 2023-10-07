@@ -2,7 +2,6 @@ import {
   App,
   Conditional,
   Element,
-  Field,
   Input,
   Output,
   Reference,
@@ -87,7 +86,7 @@ export function collection(value: Array<unknown>): CollectionHandle {
   };
 }
 
-export function handle(value: Primitive): Handle {
+export function field(value: Primitive) {
   if (typeof value === "boolean") {
     return condition(value);
   }
@@ -119,14 +118,14 @@ export function conditional(
   return {
     kind: "conditional",
     condition: { kind: "reference", keyPath: [condition._field.fieldKey] },
-    positive: handle(positive)._field,
-    negative: handle(negative)._field,
+    positive: field(positive)._field,
+    negative: field(negative)._field,
   };
 }
 
 export function input(value: InputValue): Input {
   if (isPrimitive(value)) {
-    return { kind: "input", dataBinding: handle(value)._field };
+    return { kind: "input", dataBinding: field(value)._field };
   }
 
   return {
@@ -141,19 +140,21 @@ export function output(dataBinding: Reference): Output {
   return { kind: "output", dataBinding };
 }
 
-export function element(tagName: string, properties: Properties): Element {
+export function element(view: string | View, properties?: Properties): Element {
   return {
     kind: "element",
-    viewKey: `<${tagName}>`,
-    properties: Object.entries(properties).reduce(
-      (result, [propertyKey, property]) => {
-        result[propertyKey] = isOutput(property)
-          ? output(property.dataBinding)
-          : input(property);
-        return result;
-      },
-      {} as Element["properties"]
-    ),
+    viewKey: typeof view === "string" ? `<${view}>` : view.viewKey,
+    properties:
+      properties &&
+      Object.entries(properties).reduce(
+        (result, [propertyKey, property]) => {
+          result[propertyKey] = isOutput(property)
+            ? output(property.dataBinding)
+            : input(property);
+          return result;
+        },
+        {} as NonNullable<Element["properties"]>
+      ),
   };
 }
 
@@ -163,18 +164,19 @@ export const browser = {
       output({
         kind: "reference",
         keyPath: ["browser", "console", "log"],
-        argumentBinding: handle(value)._field,
+        argumentBinding: field(value)._field,
       }),
   },
 };
 
-export function view(element: Element, fields?: Record<string, Handle>): View {
+export function view(element: Element, handles?: Record<string, Handle>): View {
   return {
     kind: "view",
+    viewKey: window.crypto.randomUUID(),
     element,
     fields:
-      fields &&
-      Object.entries(fields).reduce(
+      handles &&
+      Object.entries(handles).reduce(
         (result, [name, handle]) => {
           result[handle._field.fieldKey] = {
             ...handle._field,
@@ -182,13 +184,29 @@ export function view(element: Element, fields?: Record<string, Handle>): View {
           };
           return result;
         },
-        {} as Record<string, Field>
+        {} as NonNullable<View["fields"]>
       ),
   };
 }
 
-export function app(view: View): void {
-  const app: App = { kind: "ViewScript v0.2.1 App", view };
+export function app(mainView: View, views?: Record<string, View>): void {
+  const app: App = {
+    kind: "ViewScript v0.2.1 App",
+    mainView,
+    views:
+      views &&
+      Object.entries(views).reduce(
+        (result, [name, view]) => {
+          result[view.viewKey] = {
+            ...view,
+            name,
+          };
+          return result;
+        },
+        {} as NonNullable<App["views"]>
+      ),
+  };
+
   window.console.log(`[VSB] 🌎 Build app:`, app);
 
   new RunningApp(app);
