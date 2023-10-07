@@ -18,13 +18,13 @@ import {
   ElementHandle,
   Handle,
   InputValue,
-  Primitive,
   Properties,
+  Raw,
   StructureHandle,
   TextHandle,
   isBoxedStructure,
   isHandle,
-  isPrimitive,
+  isRaw,
 } from "./types";
 
 export class ViewScriptBridgeError extends Error {}
@@ -103,26 +103,6 @@ export function elementField(value?: Element): ElementHandle {
   };
 }
 
-export function collection(value?: Array<unknown>): CollectionHandle {
-  const fieldKey = window.crypto.randomUUID();
-
-  return {
-    _field: {
-      kind: "field",
-      fieldKey,
-      modelKey: "Collection",
-      value,
-    },
-    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Output =>
-      output({
-        kind: "reference",
-        keyPath: [fieldKey, "setTo"],
-        argumentBinding: field(nextValue)._field,
-      }),
-  };
-}
-
 export function structure(value?: object): StructureHandle {
   const fieldKey = window.crypto.randomUUID();
 
@@ -143,7 +123,27 @@ export function structure(value?: object): StructureHandle {
   };
 }
 
-export function field(value: Primitive) {
+export function collection(value?: Array<unknown>): CollectionHandle {
+  const fieldKey = window.crypto.randomUUID();
+
+  return {
+    _field: {
+      kind: "field",
+      fieldKey,
+      modelKey: "Collection",
+      value,
+    },
+    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Output =>
+      output({
+        kind: "reference",
+        keyPath: [fieldKey, "setTo"],
+        argumentBinding: field(nextValue)._field,
+      }),
+  };
+}
+
+export function field(value: Raw) {
   if (typeof value === "boolean") {
     return condition(value);
   }
@@ -160,23 +160,21 @@ export function field(value: Primitive) {
     return elementField(value);
   }
 
-  if (value instanceof Array) {
-    return collection(value);
-  }
-
   if (isBoxedStructure(value)) {
     return structure(value._structure);
   }
 
-  // TODO Create fields from models.
+  if (value instanceof Array) {
+    return collection(value);
+  }
 
   throw new ViewScriptBridgeError(`Cannot make field from value: ${value}`);
 }
 
 export function conditional(
   condition: ConditionHandle,
-  positive: Primitive,
-  negative: Primitive
+  positive: Raw,
+  negative: Raw
 ): Conditional {
   return {
     kind: "conditional",
@@ -187,7 +185,7 @@ export function conditional(
 }
 
 export function input(value: InputValue): Input {
-  if (isPrimitive(value)) {
+  if (isRaw(value)) {
     return { kind: "input", dataBinding: field(value)._field };
   }
 
