@@ -27,7 +27,7 @@ import {
 
 export class ViewScriptBridgeError extends Error {}
 
-export function condition(value: boolean): ConditionHandle {
+export function condition(value?: boolean): ConditionHandle {
   const fieldKey = window.crypto.randomUUID();
 
   return {
@@ -43,7 +43,7 @@ export function condition(value: boolean): ConditionHandle {
   };
 }
 
-export function count(value: number): CountHandle {
+export function count(value?: number): CountHandle {
   const fieldKey = window.crypto.randomUUID();
 
   return {
@@ -57,7 +57,7 @@ export function count(value: number): CountHandle {
   };
 }
 
-export function text(value: string): TextHandle {
+export function text(value?: string): TextHandle {
   const fieldKey = window.crypto.randomUUID();
 
   return {
@@ -65,7 +65,7 @@ export function text(value: string): TextHandle {
   };
 }
 
-export function elementField(value: Element): ElementHandle {
+export function elementField(value?: Element): ElementHandle {
   const fieldKey = window.crypto.randomUUID();
 
   return {
@@ -73,7 +73,7 @@ export function elementField(value: Element): ElementHandle {
   };
 }
 
-export function collection(value: Array<unknown>): CollectionHandle {
+export function collection(value?: Array<unknown>): CollectionHandle {
   const fieldKey = window.crypto.randomUUID();
 
   return {
@@ -140,6 +140,7 @@ export function output(dataBinding: Reference): Output {
   return { kind: "output", dataBinding };
 }
 
+// TODO Type check that the given properties conform to the given view.
 export function element(view: string | View, properties?: Properties): Element {
   return {
     kind: "element",
