@@ -1,30 +1,54 @@
 import * as Abstract from "viewscript-runtime";
 
-export type Handle<T extends Abstract.Field = Abstract.Field> = {
+export type BaseHandle<T extends Abstract.Field = Abstract.Field> = {
   _field: T;
+  reset: Abstract.Output;
+  setTo: (nextValue: NonNullable<T["value"]>) => Abstract.Output;
 };
 
-export type ConditionHandle = Handle<Abstract.Condition> & {
+export type ConditionHandle = BaseHandle<Abstract.Condition> & {
   disable: Abstract.Output;
   enable: Abstract.Output;
   toggle: Abstract.Output;
 };
 
-export type CountHandle = Handle<Abstract.Count> & {
+export type CountHandle = BaseHandle<Abstract.Count> & {
   add: (amount: number) => Abstract.Output;
 };
 
-export type TextHandle = Handle<Abstract.Text>;
+export type TextHandle = BaseHandle<Abstract.Text>;
 
-export type ElementHandle = Handle<Abstract.ElementField>;
+export type ElementHandle = BaseHandle<Abstract.ElementField>;
 
-export type CollectionHandle = Handle<Abstract.Collection>;
+export type CollectionHandle = BaseHandle<Abstract.Collection>;
 
-export type Primitive = boolean | number | string | Element | Array<unknown>;
+export type StructureHandle = BaseHandle<Abstract.Structure>;
+
+export type Handle =
+  | ConditionHandle
+  | CountHandle
+  | TextHandle
+  | ElementHandle
+  | CollectionHandle
+  | StructureHandle;
+
+export type BoxedStructure = { _structure: object };
+
+export type Primitive =
+  | boolean
+  | number
+  | string
+  | Abstract.Element
+  | Array<unknown>
+  | BoxedStructure;
 
 export type InputValue = Primitive | Handle | Abstract.Conditional;
 
 export type Properties = Record<string, InputValue | Abstract.Output>;
+
+export function isBoxedStructure(node: unknown): node is BoxedStructure {
+  return typeof node === "object" && node !== null && "_structure" in node;
+}
 
 export function isHandle(node: unknown): node is Handle {
   return typeof node === "object" && node !== null && "_field" in node;
@@ -36,6 +60,7 @@ export function isPrimitive(value: InputValue): value is Primitive {
     typeof value === "number" ||
     typeof value === "string" ||
     Abstract.isElement(value) ||
-    value instanceof Array
+    value instanceof Array ||
+    isBoxedStructure(value)
   );
 }

@@ -20,7 +20,9 @@ import {
   InputValue,
   Primitive,
   Properties,
+  StructureHandle,
   TextHandle,
+  isBoxedStructure,
   isHandle,
   isPrimitive,
 } from "./types";
@@ -37,6 +39,13 @@ export function condition(value?: boolean): ConditionHandle {
       modelKey: "Condition",
       value,
     },
+    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Output =>
+      output({
+        kind: "reference",
+        keyPath: [fieldKey, "setTo"],
+        argumentBinding: field(nextValue)._field,
+      }),
     disable: output({ kind: "reference", keyPath: [fieldKey, "disable"] }),
     enable: output({ kind: "reference", keyPath: [fieldKey, "enable"] }),
     toggle: output({ kind: "reference", keyPath: [fieldKey, "toggle"] }),
@@ -48,11 +57,18 @@ export function count(value?: number): CountHandle {
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Count", value },
-    add: (amount: number): Output =>
+    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Output =>
+      output({
+        kind: "reference",
+        keyPath: [fieldKey, "setTo"],
+        argumentBinding: field(nextValue)._field,
+      }),
+    add: (amount): Output =>
       output({
         kind: "reference",
         keyPath: [fieldKey, "add"],
-        argumentBinding: count(amount)._field,
+        argumentBinding: field(amount)._field,
       }),
   };
 }
@@ -62,6 +78,13 @@ export function text(value?: string): TextHandle {
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Text", value },
+    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Output =>
+      output({
+        kind: "reference",
+        keyPath: [fieldKey, "setTo"],
+        argumentBinding: field(nextValue)._field,
+      }),
   };
 }
 
@@ -70,6 +93,13 @@ export function elementField(value?: Element): ElementHandle {
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Element", value },
+    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Output =>
+      output({
+        kind: "reference",
+        keyPath: [fieldKey, "setTo"],
+        argumentBinding: field(nextValue)._field,
+      }),
   };
 }
 
@@ -83,6 +113,33 @@ export function collection(value?: Array<unknown>): CollectionHandle {
       modelKey: "Collection",
       value,
     },
+    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Output =>
+      output({
+        kind: "reference",
+        keyPath: [fieldKey, "setTo"],
+        argumentBinding: field(nextValue)._field,
+      }),
+  };
+}
+
+export function structure(value?: object): StructureHandle {
+  const fieldKey = window.crypto.randomUUID();
+
+  return {
+    _field: {
+      kind: "field",
+      fieldKey,
+      modelKey: "Structure",
+      value,
+    },
+    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Output =>
+      output({
+        kind: "reference",
+        keyPath: [fieldKey, "setTo"],
+        argumentBinding: field({ _structure: nextValue })._field,
+      }),
   };
 }
 
@@ -106,6 +163,12 @@ export function field(value: Primitive) {
   if (value instanceof Array) {
     return collection(value);
   }
+
+  if (isBoxedStructure(value)) {
+    return structure(value._structure);
+  }
+
+  // TODO Create fields from models.
 
   throw new ViewScriptBridgeError(`Cannot make field from value: ${value}`);
 }
