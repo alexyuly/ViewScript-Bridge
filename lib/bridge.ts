@@ -146,14 +146,14 @@ export function element(view: string | View, properties?: Properties): Element {
     viewKey: typeof view === "string" ? `<${view}>` : view.viewKey,
     properties:
       properties &&
-      Object.entries(properties).reduce(
+      Object.entries(properties).reduce<NonNullable<Element["properties"]>>(
         (result, [propertyKey, property]) => {
           result[propertyKey] = isOutput(property)
             ? output(property.dataBinding)
             : input(property);
           return result;
         },
-        {} as NonNullable<Element["properties"]>
+        {}
       ),
   };
 }
@@ -176,7 +176,7 @@ export function view(element: Element, handles?: Record<string, Handle>): View {
     element,
     fields:
       handles &&
-      Object.entries(handles).reduce(
+      Object.entries(handles).reduce<NonNullable<View["fields"]>>(
         (result, [name, handle]) => {
           result[handle._field.fieldKey] = {
             ...handle._field,
@@ -184,18 +184,18 @@ export function view(element: Element, handles?: Record<string, Handle>): View {
           };
           return result;
         },
-        {} as NonNullable<View["fields"]>
+        {}
       ),
   };
 }
 
-export function app(mainView: View, views?: Record<string, View>): void {
+export function app(root: View, views?: Record<string, View>): void {
   const app: App = {
     kind: "ViewScript v0.2.1 App",
-    mainView,
+    root,
     views:
       views &&
-      Object.entries(views).reduce(
+      Object.entries(views).reduce<NonNullable<App["views"]>>(
         (result, [name, view]) => {
           result[view.viewKey] = {
             ...view,
@@ -203,7 +203,7 @@ export function app(mainView: View, views?: Record<string, View>): void {
           };
           return result;
         },
-        {} as NonNullable<App["views"]>
+        {}
       ),
   };
 
