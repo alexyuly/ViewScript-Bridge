@@ -214,7 +214,6 @@ export function output(dataBinding: Reference): Output {
   return { kind: "output", dataBinding };
 }
 
-// TODO Type check that the given properties conform to the given view.
 export function element(view: string | View, properties?: Properties): Element {
   return {
     kind: "element",
