@@ -1,19 +1,4 @@
-import {
-  App,
-  Conditional,
-  Data,
-  Element,
-  Input,
-  Output,
-  Reference,
-  RunningApp,
-  Structure,
-  View,
-  isData,
-  isElement,
-  isOutput,
-  isStructure,
-} from "viewscript-runtime";
+import { Abstract, RunningApp } from "viewscript-runtime";
 
 import {
   CollectionHandle,
@@ -41,7 +26,7 @@ export function condition(value?: boolean): ConditionHandle {
       value,
     },
     reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Output =>
+    setTo: (nextValue): Abstract.Output =>
       output({
         kind: "reference",
         keyPath: [fieldKey, "setTo"],
@@ -59,19 +44,19 @@ export function count(value?: number): CountHandle {
   return {
     _field: { kind: "field", fieldKey, modelKey: "Count", value },
     reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Output =>
+    setTo: (nextValue): Abstract.Output =>
       output({
         kind: "reference",
         keyPath: [fieldKey, "setTo"],
         argumentBinding: field(nextValue)._field,
       }),
-    add: (amount): Output =>
+    add: (amount): Abstract.Output =>
       output({
         kind: "reference",
         keyPath: [fieldKey, "add"],
         argumentBinding: field(amount)._field,
       }),
-    multiplyBy: (amount): Output =>
+    multiplyBy: (amount): Abstract.Output =>
       output({
         kind: "reference",
         keyPath: [fieldKey, "add"],
@@ -86,7 +71,7 @@ export function text(value?: string): TextHandle {
   return {
     _field: { kind: "field", fieldKey, modelKey: "Text", value },
     reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Output =>
+    setTo: (nextValue): Abstract.Output =>
       output({
         kind: "reference",
         keyPath: [fieldKey, "setTo"],
@@ -95,13 +80,13 @@ export function text(value?: string): TextHandle {
   };
 }
 
-export function elementField(value?: Element): ElementHandle {
+export function elementField(value?: Abstract.Element): ElementHandle {
   const fieldKey = window.crypto.randomUUID();
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Element", value },
     reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Output =>
+    setTo: (nextValue): Abstract.Output =>
       output({
         kind: "reference",
         keyPath: [fieldKey, "setTo"],
@@ -110,7 +95,7 @@ export function elementField(value?: Element): ElementHandle {
   };
 }
 
-export function structure(value?: Structure): StructureHandle {
+export function structure(value?: Abstract.Structure): StructureHandle {
   const fieldKey = window.crypto.randomUUID();
 
   return {
@@ -121,7 +106,7 @@ export function structure(value?: Structure): StructureHandle {
       value,
     },
     reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Output =>
+    setTo: (nextValue): Abstract.Output =>
       output({
         kind: "reference",
         keyPath: [fieldKey, "setTo"],
@@ -130,7 +115,7 @@ export function structure(value?: Structure): StructureHandle {
   };
 }
 
-export function collection(value?: Array<Data>): CollectionHandle {
+export function collection(value?: Array<Abstract.Data>): CollectionHandle {
   const fieldKey = window.crypto.randomUUID();
 
   return {
@@ -141,13 +126,13 @@ export function collection(value?: Array<Data>): CollectionHandle {
       value,
     },
     reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Output =>
+    setTo: (nextValue): Abstract.Output =>
       output({
         kind: "reference",
         keyPath: [fieldKey, "setTo"],
         argumentBinding: field(nextValue)._field,
       }),
-    push: (item): Output =>
+    push: (item): Abstract.Output =>
       output({
         kind: "reference",
         keyPath: [fieldKey, "add"],
@@ -156,7 +141,7 @@ export function collection(value?: Array<Data>): CollectionHandle {
   };
 }
 
-export function field(value: Data) {
+export function field(value: Abstract.Data) {
   if (typeof value === "boolean") {
     return condition(value);
   }
@@ -169,11 +154,11 @@ export function field(value: Data) {
     return text(value);
   }
 
-  if (isElement(value)) {
+  if (Abstract.isElement(value)) {
     return elementField(value);
   }
 
-  if (isStructure(value)) {
+  if (Abstract.isStructure(value)) {
     return structure(value);
   }
 
@@ -186,9 +171,9 @@ export function field(value: Data) {
 
 export function conditional(
   condition: ConditionHandle,
-  positive: Data,
-  negative: Data
-): Conditional {
+  positive: Abstract.Data,
+  negative: Abstract.Data
+): Abstract.Conditional {
   return {
     kind: "conditional",
     condition: { kind: "reference", keyPath: [condition._field.fieldKey] },
@@ -197,8 +182,8 @@ export function conditional(
   };
 }
 
-export function input(value: InputValue): Input {
-  if (isData(value)) {
+export function input(value: InputValue): Abstract.Input {
+  if (Abstract.isData(value)) {
     return { kind: "input", dataBinding: field(value)._field };
   }
 
@@ -210,31 +195,33 @@ export function input(value: InputValue): Input {
   };
 }
 
-export function output(dataBinding: Reference): Output {
+export function output(dataBinding: Abstract.Reference): Abstract.Output {
   return { kind: "output", dataBinding };
 }
 
-export function element(view: string | View, properties?: Properties): Element {
+export function element(
+  view: string | Abstract.View,
+  properties?: Properties
+): Abstract.Element {
   return {
     kind: "element",
     viewKey: typeof view === "string" ? `<${view}>` : view.viewKey,
     properties:
       properties &&
-      Object.entries(properties).reduce<NonNullable<Element["properties"]>>(
-        (result, [propertyKey, property]) => {
-          result[propertyKey] = isOutput(property)
-            ? output(property.dataBinding)
-            : input(property);
-          return result;
-        },
-        {}
-      ),
+      Object.entries(properties).reduce<
+        NonNullable<Abstract.Element["properties"]>
+      >((result, [propertyKey, property]) => {
+        result[propertyKey] = Abstract.isOutput(property)
+          ? output(property.dataBinding)
+          : input(property);
+        return result;
+      }, {}),
   };
 }
 
 export const browser = {
   console: {
-    log: (value: any): Output =>
+    log: (value: any): Abstract.Output =>
       output({
         kind: "reference",
         keyPath: ["browser", "console", "log"],
@@ -243,14 +230,17 @@ export const browser = {
   },
 };
 
-export function view(element: Element, handles?: Record<string, Handle>): View {
+export function view(
+  element: Abstract.Element,
+  handles?: Record<string, Handle>
+): Abstract.View {
   return {
     kind: "view",
     viewKey: window.crypto.randomUUID(),
     element,
     fields:
       handles &&
-      Object.entries(handles).reduce<NonNullable<View["fields"]>>(
+      Object.entries(handles).reduce<NonNullable<Abstract.View["fields"]>>(
         (result, [name, handle]) => {
           result[handle._field.fieldKey] = {
             ...handle._field,
@@ -263,13 +253,16 @@ export function view(element: Element, handles?: Record<string, Handle>): View {
   };
 }
 
-export function app(root: View, views?: Record<string, View>): void {
-  const app: App = {
+export function app(
+  root: Abstract.View,
+  views?: Record<string, Abstract.View>
+): void {
+  const app: Abstract.App = {
     kind: "ViewScript v0.2.1 App",
     root,
     views:
       views &&
-      Object.entries(views).reduce<NonNullable<App["views"]>>(
+      Object.entries(views).reduce<NonNullable<Abstract.App["views"]>>(
         (result, [name, view]) => {
           result[view.viewKey] = {
             ...view,

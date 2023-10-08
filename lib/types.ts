@@ -1,4 +1,4 @@
-import * as Abstract from "viewscript-runtime";
+import { Abstract } from "viewscript-runtime";
 
 export type BaseHandle<T extends Abstract.Field = Abstract.Field> = {
   _field: T;
