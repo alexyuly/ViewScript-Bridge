@@ -2,19 +2,19 @@ import { Abstract } from "viewscript-runtime";
 
 export type BaseHandle<T extends Abstract.Field = Abstract.Field> = {
   _field: T;
-  reset: Abstract.Output;
-  setTo: (nextValue: NonNullable<T["value"]>) => Abstract.Output;
+  reset: Abstract.Outlet;
+  setTo: (nextValue: NonNullable<T["value"]>) => Abstract.Outlet;
 };
 
 export type ConditionHandle = BaseHandle<Abstract.Condition> & {
-  disable: Abstract.Output;
-  enable: Abstract.Output;
-  toggle: Abstract.Output;
+  disable: Abstract.Outlet;
+  enable: Abstract.Outlet;
+  toggle: Abstract.Outlet;
 };
 
 export type CountHandle = BaseHandle<Abstract.Count> & {
-  add: (amount: number) => Abstract.Output;
-  multiplyBy: (amount: number) => Abstract.Output;
+  add: (amount: number) => Abstract.Outlet;
+  multiplyBy: (amount: number) => Abstract.Outlet;
 };
 
 export type TextHandle = BaseHandle<Abstract.Text>;
@@ -24,7 +24,7 @@ export type ElementHandle = BaseHandle<Abstract.ElementField>;
 export type StructureHandle = BaseHandle<Abstract.StructureField>;
 
 export type CollectionHandle = BaseHandle<Abstract.Collection> & {
-  push: (item: Abstract.Data) => Abstract.Output;
+  push: (item: Abstract.Data) => Abstract.Outlet;
 };
 
 export type Handle =
@@ -35,9 +35,9 @@ export type Handle =
   | StructureHandle
   | CollectionHandle;
 
-export type InputValue = Abstract.Data | Handle | Abstract.Conditional;
+export type InletValue = Abstract.Data | Handle | Abstract.Conditional;
 
-export type Properties = Record<string, InputValue | Abstract.Output>;
+export type Properties = Record<string, InletValue | Abstract.Outlet>;
 
 export function isHandle(node: unknown): node is Handle {
   return typeof node === "object" && node !== null && "_field" in node;

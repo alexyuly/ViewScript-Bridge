@@ -6,7 +6,7 @@ import {
   CountHandle,
   ElementHandle,
   Handle,
-  InputValue,
+  InletValue,
   Properties,
   StructureHandle,
   TextHandle,
@@ -25,16 +25,16 @@ export function condition(value?: boolean): ConditionHandle {
       modelKey: "Condition",
       value,
     },
-    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Abstract.Output =>
-      output({
-        kind: "reference",
+    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Abstract.Outlet =>
+      outlet({
+        kind: "output",
         keyPath: [fieldKey, "setTo"],
-        argumentBinding: field(nextValue)._field,
+        argument: field(nextValue)._field,
       }),
-    disable: output({ kind: "reference", keyPath: [fieldKey, "disable"] }),
-    enable: output({ kind: "reference", keyPath: [fieldKey, "enable"] }),
-    toggle: output({ kind: "reference", keyPath: [fieldKey, "toggle"] }),
+    disable: outlet({ kind: "output", keyPath: [fieldKey, "disable"] }),
+    enable: outlet({ kind: "output", keyPath: [fieldKey, "enable"] }),
+    toggle: outlet({ kind: "output", keyPath: [fieldKey, "toggle"] }),
   };
 }
 
@@ -43,24 +43,24 @@ export function count(value?: number): CountHandle {
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Count", value },
-    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Abstract.Output =>
-      output({
-        kind: "reference",
+    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Abstract.Outlet =>
+      outlet({
+        kind: "output",
         keyPath: [fieldKey, "setTo"],
-        argumentBinding: field(nextValue)._field,
+        argument: field(nextValue)._field,
       }),
-    add: (amount): Abstract.Output =>
-      output({
-        kind: "reference",
+    add: (amount): Abstract.Outlet =>
+      outlet({
+        kind: "output",
         keyPath: [fieldKey, "add"],
-        argumentBinding: field(amount)._field,
+        argument: field(amount)._field,
       }),
-    multiplyBy: (amount): Abstract.Output =>
-      output({
-        kind: "reference",
+    multiplyBy: (amount): Abstract.Outlet =>
+      outlet({
+        kind: "output",
         keyPath: [fieldKey, "add"],
-        argumentBinding: field(amount)._field,
+        argument: field(amount)._field,
       }),
   };
 }
@@ -70,12 +70,12 @@ export function text(value?: string): TextHandle {
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Text", value },
-    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Abstract.Output =>
-      output({
-        kind: "reference",
+    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Abstract.Outlet =>
+      outlet({
+        kind: "output",
         keyPath: [fieldKey, "setTo"],
-        argumentBinding: field(nextValue)._field,
+        argument: field(nextValue)._field,
       }),
   };
 }
@@ -85,12 +85,12 @@ export function elementField(value?: Abstract.Element): ElementHandle {
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Element", value },
-    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Abstract.Output =>
-      output({
-        kind: "reference",
+    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Abstract.Outlet =>
+      outlet({
+        kind: "output",
         keyPath: [fieldKey, "setTo"],
-        argumentBinding: field(nextValue)._field,
+        argument: field(nextValue)._field,
       }),
   };
 }
@@ -105,12 +105,12 @@ export function structure(value?: Abstract.Structure): StructureHandle {
       modelKey: "Structure",
       value,
     },
-    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Abstract.Output =>
-      output({
-        kind: "reference",
+    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Abstract.Outlet =>
+      outlet({
+        kind: "output",
         keyPath: [fieldKey, "setTo"],
-        argumentBinding: field(nextValue)._field,
+        argument: field(nextValue)._field,
       }),
   };
 }
@@ -125,18 +125,18 @@ export function collection(value?: Array<Abstract.Data>): CollectionHandle {
       modelKey: "Collection",
       value,
     },
-    reset: output({ kind: "reference", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue): Abstract.Output =>
-      output({
-        kind: "reference",
+    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue): Abstract.Outlet =>
+      outlet({
+        kind: "output",
         keyPath: [fieldKey, "setTo"],
-        argumentBinding: field(nextValue)._field,
+        argument: field(nextValue)._field,
       }),
-    push: (item): Abstract.Output =>
-      output({
-        kind: "reference",
+    push: (item): Abstract.Outlet =>
+      outlet({
+        kind: "output",
         keyPath: [fieldKey, "add"],
-        argumentBinding: field(item)._field,
+        argument: field(item)._field,
       }),
   };
 }
@@ -176,27 +176,29 @@ export function conditional(
 ): Abstract.Conditional {
   return {
     kind: "conditional",
-    condition: { kind: "reference", keyPath: [condition._field.fieldKey] },
+    condition: { kind: "input", keyPath: [condition._field.fieldKey] },
     positive: field(positive)._field,
     negative: field(negative)._field,
   };
 }
 
-export function input(value: InputValue): Abstract.Input {
+export function inlet(value: InletValue): Abstract.Inlet {
   if (Abstract.isData(value)) {
-    return { kind: "input", dataBinding: field(value)._field };
+    return { kind: "inlet", connection: field(value)._field };
   }
 
-  return {
-    kind: "input",
-    dataBinding: isHandle(value)
-      ? { kind: "reference", keyPath: [value._field.fieldKey] }
-      : value,
-  };
+  if (isHandle(value)) {
+    return {
+      kind: "inlet",
+      connection: { kind: "input", keyPath: [value._field.fieldKey] },
+    };
+  }
+
+  return { kind: "inlet", connection: value };
 }
 
-export function output(dataBinding: Abstract.Reference): Abstract.Output {
-  return { kind: "output", dataBinding };
+export function outlet(connection: Abstract.Output): Abstract.Outlet {
+  return { kind: "outlet", connection };
 }
 
 export function element(
@@ -211,9 +213,9 @@ export function element(
       Object.entries(properties).reduce<
         NonNullable<Abstract.Element["properties"]>
       >((result, [propertyKey, property]) => {
-        result[propertyKey] = Abstract.isOutput(property)
-          ? output(property.dataBinding)
-          : input(property);
+        result[propertyKey] = Abstract.isOutlet(property)
+          ? outlet(property.connection)
+          : inlet(property);
         return result;
       }, {}),
   };
@@ -221,29 +223,29 @@ export function element(
 
 export const browser = {
   console: {
-    log: (value: any): Abstract.Output =>
-      output({
-        kind: "reference",
+    log: (value: any): Abstract.Outlet =>
+      outlet({
+        kind: "output",
         keyPath: ["browser", "console", "log"],
-        argumentBinding: field(value)._field,
+        argument: field(value)._field,
       }),
   },
 };
 
 export function view(
   element: Abstract.Element,
-  handles?: Record<string, Handle>
+  terrain?: Record<string, Handle>
 ): Abstract.View {
   return {
     kind: "view",
     viewKey: window.crypto.randomUUID(),
     element,
-    fields:
-      handles &&
-      Object.entries(handles).reduce<NonNullable<Abstract.View["fields"]>>(
-        (result, [name, handle]) => {
-          result[handle._field.fieldKey] = {
-            ...handle._field,
+    terrain:
+      terrain &&
+      Object.entries(terrain).reduce<NonNullable<Abstract.View["terrain"]>>(
+        (result, [name, feature]) => {
+          result[feature._field.fieldKey] = {
+            ...feature._field,
             name,
           };
           return result;
