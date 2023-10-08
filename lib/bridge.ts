@@ -7,12 +7,12 @@ import {
   Output,
   Reference,
   RunningApp,
-  StructureData,
+  Structure,
   View,
   isData,
   isElement,
   isOutput,
-  isStructureData,
+  isStructure,
 } from "viewscript-runtime";
 
 import {
@@ -110,7 +110,7 @@ export function elementField(value?: Element): ElementHandle {
   };
 }
 
-export function structure(value?: StructureData): StructureHandle {
+export function structure(value?: Structure): StructureHandle {
   const fieldKey = window.crypto.randomUUID();
 
   return {
@@ -125,7 +125,7 @@ export function structure(value?: StructureData): StructureHandle {
       output({
         kind: "reference",
         keyPath: [fieldKey, "setTo"],
-        argumentBinding: field({ _structure: nextValue })._field,
+        argumentBinding: field(nextValue)._field,
       }),
   };
 }
@@ -173,7 +173,7 @@ export function field(value: Data) {
     return elementField(value);
   }
 
-  if (isStructureData(value)) {
+  if (isStructure(value)) {
     return structure(value);
   }
 

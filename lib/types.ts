@@ -21,7 +21,7 @@ export type TextHandle = BaseHandle<Abstract.Text>;
 
 export type ElementHandle = BaseHandle<Abstract.ElementField>;
 
-export type StructureHandle = BaseHandle<Abstract.Structure>;
+export type StructureHandle = BaseHandle<Abstract.StructureField>;
 
 export type CollectionHandle = BaseHandle<Abstract.Collection> & {
   push: (item: Abstract.Data) => Abstract.Output;
