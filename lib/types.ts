@@ -14,6 +14,7 @@ export type ConditionHandle = BaseHandle<Abstract.Condition> & {
 
 export type CountHandle = BaseHandle<Abstract.Count> & {
   add: (amount: number) => Abstract.Output;
+  multiplyBy: (amount: number) => Abstract.Output;
 };
 
 export type TextHandle = BaseHandle<Abstract.Text>;
@@ -22,7 +23,9 @@ export type ElementHandle = BaseHandle<Abstract.ElementField>;
 
 export type StructureHandle = BaseHandle<Abstract.Structure>;
 
-export type CollectionHandle = BaseHandle<Abstract.Collection>;
+export type CollectionHandle = BaseHandle<Abstract.Collection> & {
+  push: (item: Abstract.Data) => Abstract.Output;
+};
 
 export type Handle =
   | ConditionHandle
@@ -32,31 +35,10 @@ export type Handle =
   | StructureHandle
   | CollectionHandle;
 
-export type BoxedStructure = { _structure: object };
-
-export type Primary = boolean | number | string;
-
-export type Raw = Primary | Abstract.Element | BoxedStructure | Array<unknown>;
-
-export type InputValue = Raw | Handle | Abstract.Conditional;
+export type InputValue = Abstract.Data | Handle | Abstract.Conditional;
 
 export type Properties = Record<string, InputValue | Abstract.Output>;
 
-export function isBoxedStructure(node: unknown): node is BoxedStructure {
-  return typeof node === "object" && node !== null && "_structure" in node;
-}
-
 export function isHandle(node: unknown): node is Handle {
   return typeof node === "object" && node !== null && "_field" in node;
-}
-
-export function isRaw(value: InputValue): value is Raw {
-  return (
-    typeof value === "boolean" ||
-    typeof value === "number" ||
-    typeof value === "string" ||
-    Abstract.isElement(value) ||
-    isBoxedStructure(value) ||
-    value instanceof Array
-  );
 }

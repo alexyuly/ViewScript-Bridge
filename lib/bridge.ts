@@ -1,14 +1,18 @@
 import {
   App,
   Conditional,
+  Data,
   Element,
   Input,
   Output,
   Reference,
   RunningApp,
+  StructureData,
   View,
+  isData,
   isElement,
   isOutput,
+  isStructureData,
 } from "viewscript-runtime";
 
 import {
@@ -19,12 +23,9 @@ import {
   Handle,
   InputValue,
   Properties,
-  Raw,
   StructureHandle,
   TextHandle,
-  isBoxedStructure,
   isHandle,
-  isRaw,
 } from "./types";
 
 export class ViewScriptBridgeError extends Error {}
@@ -70,6 +71,12 @@ export function count(value?: number): CountHandle {
         keyPath: [fieldKey, "add"],
         argumentBinding: field(amount)._field,
       }),
+    multiplyBy: (amount): Output =>
+      output({
+        kind: "reference",
+        keyPath: [fieldKey, "add"],
+        argumentBinding: field(amount)._field,
+      }),
   };
 }
 
@@ -103,7 +110,7 @@ export function elementField(value?: Element): ElementHandle {
   };
 }
 
-export function structure(value?: object): StructureHandle {
+export function structure(value?: StructureData): StructureHandle {
   const fieldKey = window.crypto.randomUUID();
 
   return {
@@ -123,7 +130,7 @@ export function structure(value?: object): StructureHandle {
   };
 }
 
-export function collection(value?: Array<unknown>): CollectionHandle {
+export function collection(value?: Array<Data>): CollectionHandle {
   const fieldKey = window.crypto.randomUUID();
 
   return {
@@ -140,10 +147,16 @@ export function collection(value?: Array<unknown>): CollectionHandle {
         keyPath: [fieldKey, "setTo"],
         argumentBinding: field(nextValue)._field,
       }),
+    push: (item): Output =>
+      output({
+        kind: "reference",
+        keyPath: [fieldKey, "add"],
+        argumentBinding: field(item)._field,
+      }),
   };
 }
 
-export function field(value: Raw) {
+export function field(value: Data) {
   if (typeof value === "boolean") {
     return condition(value);
   }
@@ -160,8 +173,8 @@ export function field(value: Raw) {
     return elementField(value);
   }
 
-  if (isBoxedStructure(value)) {
-    return structure(value._structure);
+  if (isStructureData(value)) {
+    return structure(value);
   }
 
   if (value instanceof Array) {
@@ -173,8 +186,8 @@ export function field(value: Raw) {
 
 export function conditional(
   condition: ConditionHandle,
-  positive: Raw,
-  negative: Raw
+  positive: Data,
+  negative: Data
 ): Conditional {
   return {
     kind: "conditional",
@@ -185,7 +198,7 @@ export function conditional(
 }
 
 export function input(value: InputValue): Input {
-  if (isRaw(value)) {
+  if (isData(value)) {
     return { kind: "input", dataBinding: field(value)._field };
   }
 
