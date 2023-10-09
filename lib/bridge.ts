@@ -205,10 +205,10 @@ export function inlet(sink: Sink): Abstract.Inlet {
   return { kind: "inlet", connection: sink };
 }
 
-export function outlet(faucet: Faucet | Abstract.Output): Abstract.Outlet {
+export function outlet(faucet: Faucet): Abstract.Outlet {
   return {
     kind: "outlet",
-    connection: isFaucet(faucet) ? faucet._output : faucet,
+    connection: faucet._output,
   };
 }
 
