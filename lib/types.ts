@@ -43,7 +43,12 @@ export type Faucet<T extends Abstract.Stream = Abstract.Stream> = {
 
 export type Source = Faucet | Abstract.Outlet;
 
-export type ElementProperties = Record<string, Sink | Source>;
+export type ElementProperties<T extends string | Abstract.View> =
+  T extends string
+    ? Record<string, Sink | Source> // TODO improve this type
+    : T extends Abstract.View
+    ? Record<string, Sink | Source> // TODO improve this type
+    : never;
 
 export type ViewTerrain = Record<string, Drain | Faucet>;
 
