@@ -1,6 +1,6 @@
 import { Abstract } from "viewscript-runtime";
 
-export type BaseDrain<T extends Abstract.Field = Abstract.Field> = {
+type BaseDrain<T extends Abstract.Field = Abstract.Field> = {
   _field: T;
   reset: Abstract.Outlet;
   setTo: (nextValue: NonNullable<T["value"]>) => Abstract.Outlet;
