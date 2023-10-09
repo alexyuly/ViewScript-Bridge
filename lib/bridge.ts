@@ -19,12 +19,34 @@ class ViewScriptBridgeError extends Error {}
 
 const viewCache: Record<string, Abstract.View> = {};
 
-function newKey() {
+function key() {
   return window.crypto.randomUUID();
 }
 
+function inlet(sink: Sink): Abstract.Inlet {
+  if (Abstract.isData(sink)) {
+    return { kind: "inlet", connection: field(sink)._field };
+  }
+
+  if (Abstract.isConditional(sink)) {
+    return { kind: "inlet", connection: sink };
+  }
+
+  return {
+    kind: "inlet",
+    connection: { kind: "input", keyPath: [sink._field.fieldKey] },
+  };
+}
+
+function outlet(connection: Abstract.Output): Abstract.Outlet {
+  return {
+    kind: "outlet",
+    connection,
+  };
+}
+
 export function condition(value?: boolean): ConditionDrain {
-  const fieldKey = newKey();
+  const fieldKey = key();
 
   return {
     _field: {
@@ -47,7 +69,7 @@ export function condition(value?: boolean): ConditionDrain {
 }
 
 export function count(value?: number): CountDrain {
-  const fieldKey = newKey();
+  const fieldKey = key();
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Count", value },
@@ -74,7 +96,7 @@ export function count(value?: number): CountDrain {
 }
 
 export function text(value?: string): TextDrain {
-  const fieldKey = newKey();
+  const fieldKey = key();
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Text", value },
@@ -89,7 +111,7 @@ export function text(value?: string): TextDrain {
 }
 
 export function structure(value?: Abstract.Structure): StructureDrain {
-  const fieldKey = newKey();
+  const fieldKey = key();
 
   return {
     _field: {
@@ -109,7 +131,7 @@ export function structure(value?: Abstract.Structure): StructureDrain {
 }
 
 export function elementField(value?: Abstract.Element): ElementDrain {
-  const fieldKey = newKey();
+  const fieldKey = key();
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Element", value },
@@ -124,7 +146,7 @@ export function elementField(value?: Abstract.Element): ElementDrain {
 }
 
 export function collection(value?: Array<Abstract.Data>): CollectionDrain {
-  const fieldKey = newKey();
+  const fieldKey = key();
 
   return {
     _field: {
@@ -170,7 +192,7 @@ export function field(value: Abstract.Data) {
     return elementField(value);
   }
 
-  if (value instanceof Array) {
+  if (value instanceof Array && value.every(Abstract.isData)) {
     return collection(value);
   }
 
@@ -193,29 +215,7 @@ export function when(
 }
 
 export function stream(): Faucet {
-  return { _stream: { kind: "stream", streamKey: newKey() } };
-}
-
-export function inlet(sink: Sink): Abstract.Inlet {
-  if (Abstract.isData(sink)) {
-    return { kind: "inlet", connection: field(sink)._field };
-  }
-
-  if (isDrain(sink)) {
-    return {
-      kind: "inlet",
-      connection: { kind: "input", keyPath: [sink._field.fieldKey] },
-    };
-  }
-
-  return { kind: "inlet", connection: sink };
-}
-
-export function outlet(connection: Abstract.Output): Abstract.Outlet {
-  return {
-    kind: "outlet",
-    connection,
-  };
+  return { _stream: { kind: "stream", streamKey: key() } };
 }
 
 export function element(
@@ -259,7 +259,7 @@ export function view<T extends ViewTerrain>(
   if (Abstract.isElement(argument0)) {
     return {
       kind: "view",
-      viewKey: newKey(),
+      viewKey: key(),
       element: argument0,
     };
   }
@@ -289,7 +289,7 @@ export function view<T extends ViewTerrain>(
 
   return {
     kind: "view",
-    viewKey: newKey(),
+    viewKey: key(),
     element: argument1(argument0),
     terrain,
   };
