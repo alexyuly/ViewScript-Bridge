@@ -61,7 +61,7 @@ export function count(value?: number): CountDrain {
     multiplyBy: (amount) =>
       outlet({
         kind: "output",
-        keyPath: [fieldKey, "add"],
+        keyPath: [fieldKey, "multiplyBy"],
         argument: field(amount)._field,
       }),
   };
@@ -137,7 +137,7 @@ export function collection(value?: Array<Abstract.Data>): CollectionDrain {
     push: (item) =>
       outlet({
         kind: "output",
-        keyPath: [fieldKey, "add"],
+        keyPath: [fieldKey, "push"],
         argument: field(item)._field,
       }),
   };
