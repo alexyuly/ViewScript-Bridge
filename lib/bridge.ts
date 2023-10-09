@@ -168,10 +168,12 @@ export function field(value: Abstract.Data) {
     return collection(value);
   }
 
-  throw new ViewScriptBridgeError(`Cannot make field from value: ${value}`);
+  throw new ViewScriptBridgeError(
+    `The first argument passed to field is invalid: ${value}`
+  );
 }
 
-export function conditional(
+export function when(
   condition: ConditionDrain,
   positive: Abstract.Data,
   negative: Abstract.Data
@@ -235,33 +237,51 @@ export function element(
   };
 }
 
-export function view(
-  element: Abstract.Element,
-  terrain?: Record<string, Drain | Faucet>
+export function view(element: Abstract.Element): Abstract.View;
+export function view<T extends Record<string, Drain | Faucet>>(
+  terrain: T,
+  elementMaker: (terrain: T) => Abstract.Element
+): Abstract.View;
+export function view<T extends Record<string, Drain | Faucet>>(
+  param0: Abstract.Element | T,
+  param1?: (terrain: T) => Abstract.Element
 ): Abstract.View {
+  if (Abstract.isElement(param0)) {
+    return {
+      kind: "view",
+      viewKey: window.crypto.randomUUID(),
+      element: param0,
+    };
+  }
+
+  const terrain = Object.entries(param0).reduce<
+    NonNullable<Abstract.View["terrain"]>
+  >((result, [name, feature]) => {
+    if (isDrain(feature)) {
+      result[feature._field.fieldKey] = {
+        ...feature._field,
+        name,
+      };
+    } else {
+      result[feature._stream.streamKey] = {
+        ...feature._stream,
+        name,
+      };
+    }
+    return result;
+  }, {});
+
+  if (param1 === undefined) {
+    throw new ViewScriptBridgeError(
+      `The second argument passed to view is invalid: ${param1}`
+    );
+  }
+
   return {
     kind: "view",
     viewKey: window.crypto.randomUUID(),
-    element,
-    terrain:
-      terrain &&
-      Object.entries(terrain).reduce<NonNullable<Abstract.View["terrain"]>>(
-        (result, [name, feature]) => {
-          if (isDrain(feature)) {
-            result[feature._field.fieldKey] = {
-              ...feature._field,
-              name,
-            };
-          } else {
-            result[feature._stream.streamKey] = {
-              ...feature._stream,
-              name,
-            };
-          }
-          return result;
-        },
-        {}
-      ),
+    element: param1(param0),
+    terrain,
   };
 }
 
@@ -276,26 +296,54 @@ export const browser = {
   },
 };
 
-export function app(
-  root: Abstract.View,
-  views?: Record<string, Abstract.View>
+export function render(rootElement: Abstract.Element): void;
+export function render(root: Abstract.View): void;
+export function render(
+  views: Record<string, Abstract.View>,
+  root: Abstract.View
+): void;
+export function render(
+  param0: Abstract.Element | Abstract.View | Record<string, Abstract.View>,
+  param1?: Abstract.View
 ): void {
-  const app: Abstract.App = {
-    kind: "ViewScript v0.3.0 App",
-    root,
-    views:
-      views &&
-      Object.entries(views).reduce<NonNullable<Abstract.App["views"]>>(
-        (result, [name, view]) => {
-          result[view.viewKey] = {
-            ...view,
-            name,
-          };
-          return result;
-        },
-        {}
-      ),
-  };
+  let app: Abstract.App;
+
+  const kind = "ViewScript v0.3.0 App";
+
+  if (Abstract.isElement(param0)) {
+    app = {
+      kind,
+      root: view(param0),
+    };
+  } else if (Abstract.isView(param0)) {
+    app = {
+      kind,
+      root: param0,
+    };
+  } else {
+    if (param1 === undefined) {
+      throw new ViewScriptBridgeError(
+        `The second argument passed to render is invalid: ${param1}`
+      );
+    }
+
+    app = {
+      kind,
+      root: param1,
+      views:
+        param0 &&
+        Object.entries(param0).reduce<NonNullable<Abstract.App["views"]>>(
+          (result, [name, view]) => {
+            result[view.viewKey] = {
+              ...view,
+              name,
+            };
+            return result;
+          },
+          {}
+        ),
+    };
+  }
 
   window.console.log(`[VSB] 🌎 Build app:`, app);
 
