@@ -27,7 +27,7 @@ export type CollectionDrain = BaseDrain<Abstract.Collection> & {
   push: (item: Abstract.Data) => Abstract.Outlet;
 };
 
-export type Drain =
+type Drain =
   | ConditionDrain
   | CountDrain
   | TextDrain
@@ -35,20 +35,19 @@ export type Drain =
   | ElementDrain
   | CollectionDrain;
 
-export type DrainByKey<ModelKey extends string = string> =
-  ModelKey extends "Condition"
-    ? ConditionDrain
-    : ModelKey extends "Count"
-    ? CountDrain
-    : ModelKey extends "Text"
-    ? TextDrain
-    : ModelKey extends "Structure"
-    ? StructureDrain
-    : ModelKey extends "Element"
-    ? ElementDrain
-    : ModelKey extends "Collection"
-    ? CollectionDrain
-    : Drain;
+type DrainByKey<ModelKey extends string = string> = ModelKey extends "Condition"
+  ? ConditionDrain
+  : ModelKey extends "Count"
+  ? CountDrain
+  : ModelKey extends "Text"
+  ? TextDrain
+  : ModelKey extends "Structure"
+  ? StructureDrain
+  : ModelKey extends "Element"
+  ? ElementDrain
+  : ModelKey extends "Collection"
+  ? CollectionDrain
+  : Drain;
 
 type DataByKey<ModelKey extends string = string> = ModelKey extends "Condition"
   ? boolean
@@ -73,7 +72,7 @@ export type Faucet<T extends Abstract.Stream = Abstract.Stream> = {
   _stream: T;
 };
 
-export type Source = Faucet | Abstract.Outlet;
+type Source = Faucet | Abstract.Outlet;
 
 export type ElementProperties<T extends string | Abstract.View> =
   T extends string
