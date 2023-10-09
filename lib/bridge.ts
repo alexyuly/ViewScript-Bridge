@@ -282,7 +282,7 @@ export function app(
   views?: Record<string, Abstract.View>
 ): void {
   const app: Abstract.App = {
-    kind: "ViewScript v0.2.1 App",
+    kind: "ViewScript v0.3.0 App",
     root,
     views:
       views &&
