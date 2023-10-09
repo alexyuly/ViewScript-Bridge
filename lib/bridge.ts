@@ -204,9 +204,7 @@ export function inlet(sink: Sink): Abstract.Inlet {
   return { kind: "inlet", connection: sink };
 }
 
-export function outlet(
-  connection: Abstract.Output | Abstract.Stream
-): Abstract.Outlet {
+export function outlet(connection: Abstract.Output): Abstract.Outlet {
   return {
     kind: "outlet",
     connection,
@@ -228,7 +226,10 @@ export function element(
         result[propertyKey] = Abstract.isOutlet(property)
           ? property
           : isFaucet(property)
-          ? outlet(property._stream)
+          ? outlet({
+              kind: "output",
+              keyPath: [property._stream.streamKey],
+            })
           : inlet(property);
         return result;
       }, {}),
