@@ -19,9 +19,9 @@ export type CountDrain = BaseDrain<Abstract.Count> & {
 
 export type TextDrain = BaseDrain<Abstract.Text>;
 
-export type ElementDrain = BaseDrain<Abstract.ElementField>;
-
 export type StructureDrain = BaseDrain<Abstract.StructureField>;
+
+export type ElementDrain = BaseDrain<Abstract.ElementField>;
 
 export type CollectionDrain = BaseDrain<Abstract.Collection> & {
   push: (item: Abstract.Data) => Abstract.Outlet;
@@ -31,17 +31,19 @@ export type Drain =
   | ConditionDrain
   | CountDrain
   | TextDrain
-  | ElementDrain
   | StructureDrain
+  | ElementDrain
   | CollectionDrain;
 
-export type Sink = Abstract.Data | Drain | Abstract.Conditional;
+export type Sink = Abstract.Data | Abstract.Conditional | Drain;
 
-export type Faucet = {
-  _stream: Abstract.Stream;
+export type Faucet<T extends Abstract.Stream = Abstract.Stream> = {
+  _stream: T;
 };
 
-export type Properties = Record<string, Sink | Faucet | Abstract.Outlet>;
+export type Source = Faucet | Abstract.Outlet;
+
+export type Properties = Record<string, Sink | Source>;
 
 export function isDrain(node: unknown): node is Drain {
   return typeof node === "object" && node !== null && "_field" in node;

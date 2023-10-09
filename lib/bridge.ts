@@ -1,12 +1,11 @@
 import { Abstract, RunningApp } from "viewscript-runtime";
 
 import {
-  BaseDrain,
   CollectionDrain,
   ConditionDrain,
   CountDrain,
-  ElementDrain,
   Drain,
+  ElementDrain,
   Faucet,
   Properties,
   Sink,
@@ -83,21 +82,6 @@ export function text(value?: string): TextDrain {
   };
 }
 
-export function elementField(value?: Abstract.Element): ElementDrain {
-  const fieldKey = window.crypto.randomUUID();
-
-  return {
-    _field: { kind: "field", fieldKey, modelKey: "Element", value },
-    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue) =>
-      outlet({
-        kind: "output",
-        keyPath: [fieldKey, "setTo"],
-        argument: field(nextValue)._field,
-      }),
-  };
-}
-
 export function structure(value?: Abstract.Structure): StructureDrain {
   const fieldKey = window.crypto.randomUUID();
 
@@ -108,6 +92,21 @@ export function structure(value?: Abstract.Structure): StructureDrain {
       modelKey: "Structure",
       value,
     },
+    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
+    setTo: (nextValue) =>
+      outlet({
+        kind: "output",
+        keyPath: [fieldKey, "setTo"],
+        argument: field(nextValue)._field,
+      }),
+  };
+}
+
+export function elementField(value?: Abstract.Element): ElementDrain {
+  const fieldKey = window.crypto.randomUUID();
+
+  return {
+    _field: { kind: "field", fieldKey, modelKey: "Element", value },
     reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
     setTo: (nextValue) =>
       outlet({
@@ -157,12 +156,12 @@ export function field(value: Abstract.Data) {
     return text(value);
   }
 
-  if (Abstract.isElement(value)) {
-    return elementField(value);
-  }
-
   if (Abstract.isStructure(value)) {
     return structure(value);
+  }
+
+  if (Abstract.isElement(value)) {
+    return elementField(value);
   }
 
   if (value instanceof Array) {
