@@ -1,44 +1,52 @@
 import { Abstract } from "viewscript-runtime";
 
-export type BaseHandle<T extends Abstract.Field = Abstract.Field> = {
-  _field: T;
-  reset: Abstract.Outlet;
-  setTo: (nextValue: NonNullable<T["value"]>) => Abstract.Outlet;
+export type Faucet = {
+  _output: Abstract.Stream | Abstract.Output;
 };
 
-export type ConditionHandle = BaseHandle<Abstract.Condition> & {
-  disable: Abstract.Outlet;
-  enable: Abstract.Outlet;
-  toggle: Abstract.Outlet;
+export type BaseDrain<T extends Abstract.Field = Abstract.Field> = {
+  _input: T;
+  reset: Faucet;
+  setTo: (nextValue: NonNullable<T["value"]>) => Faucet;
 };
 
-export type CountHandle = BaseHandle<Abstract.Count> & {
-  add: (amount: number) => Abstract.Outlet;
-  multiplyBy: (amount: number) => Abstract.Outlet;
+export type ConditionDrain = BaseDrain<Abstract.Condition> & {
+  disable: Faucet;
+  enable: Faucet;
+  toggle: Faucet;
 };
 
-export type TextHandle = BaseHandle<Abstract.Text>;
-
-export type ElementHandle = BaseHandle<Abstract.ElementField>;
-
-export type StructureHandle = BaseHandle<Abstract.StructureField>;
-
-export type CollectionHandle = BaseHandle<Abstract.Collection> & {
-  push: (item: Abstract.Data) => Abstract.Outlet;
+export type CountDrain = BaseDrain<Abstract.Count> & {
+  add: (amount: number) => Faucet;
+  multiplyBy: (amount: number) => Faucet;
 };
 
-export type Handle =
-  | ConditionHandle
-  | CountHandle
-  | TextHandle
-  | ElementHandle
-  | StructureHandle
-  | CollectionHandle;
+export type TextDrain = BaseDrain<Abstract.Text>;
 
-export type InletValue = Abstract.Data | Handle | Abstract.Conditional;
+export type ElementDrain = BaseDrain<Abstract.ElementField>;
 
-export type Properties = Record<string, InletValue | Abstract.Outlet>;
+export type StructureDrain = BaseDrain<Abstract.StructureField>;
 
-export function isHandle(node: unknown): node is Handle {
-  return typeof node === "object" && node !== null && "_field" in node;
+export type CollectionDrain = BaseDrain<Abstract.Collection> & {
+  push: (item: Abstract.Data) => Faucet;
+};
+
+export type Drain =
+  | ConditionDrain
+  | CountDrain
+  | TextDrain
+  | ElementDrain
+  | StructureDrain
+  | CollectionDrain;
+
+export type Sink = Abstract.Data | Drain | Abstract.Conditional;
+
+export type Properties = Record<string, Sink | Faucet>;
+
+export function isDrain(node: unknown): node is Drain {
+  return typeof node === "object" && node !== null && "_input" in node;
+}
+
+export function isFaucet(node: unknown): node is Faucet {
+  return typeof node === "object" && node !== null && "_output" in node;
 }
