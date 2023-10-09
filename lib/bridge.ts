@@ -235,17 +235,6 @@ export function element(
   };
 }
 
-export const browser = {
-  console: {
-    log: (value: any): Abstract.Outlet =>
-      outlet({
-        kind: "output",
-        keyPath: ["browser", "console", "log"],
-        argument: field(value)._field,
-      }),
-  },
-};
-
 export function view(
   element: Abstract.Element,
   terrain?: Record<string, Drain | Faucet>
@@ -275,6 +264,17 @@ export function view(
       ),
   };
 }
+
+export const browser = {
+  console: {
+    log: (value: any): Abstract.Outlet =>
+      outlet({
+        kind: "output",
+        keyPath: ["browser", "console", "log"],
+        argument: field(value)._field,
+      }),
+  },
+};
 
 export function app(
   root: Abstract.View,
