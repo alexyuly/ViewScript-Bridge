@@ -4,18 +4,20 @@ import {
   CollectionDrain,
   ConditionDrain,
   CountDrain,
-  Drain,
   ElementDrain,
+  ElementProperties,
   Faucet,
-  Properties,
   Sink,
   StructureDrain,
   TextDrain,
+  ViewTerrain,
   isDrain,
   isFaucet,
 } from "./types";
 
 class ViewScriptBridgeError extends Error {}
+
+const viewCache: Record<string, Abstract.View> = {};
 
 function newKey() {
   return window.crypto.randomUUID();
@@ -218,8 +220,12 @@ export function outlet(connection: Abstract.Output): Abstract.Outlet {
 
 export function element(
   view: string | Abstract.View,
-  properties?: Properties
+  properties?: ElementProperties
 ): Abstract.Element {
+  if (Abstract.isView(view) && !(view.viewKey in viewCache)) {
+    viewCache[view.viewKey] = view;
+  }
+
   return {
     kind: "element",
     viewKey: typeof view === "string" ? `<${view}>` : view.viewKey,
@@ -242,23 +248,23 @@ export function element(
 }
 
 export function view(element: Abstract.Element): Abstract.View;
-export function view<T extends Record<string, Drain | Faucet>>(
+export function view<T extends ViewTerrain>(
   terrain: T,
   elementMaker: (terrain: T) => Abstract.Element
 ): Abstract.View;
-export function view<T extends Record<string, Drain | Faucet>>(
-  param0: Abstract.Element | T,
-  param1?: (terrain: T) => Abstract.Element
+export function view<T extends ViewTerrain>(
+  argument0: Abstract.Element | T,
+  argument1?: (terrain: T) => Abstract.Element
 ): Abstract.View {
-  if (Abstract.isElement(param0)) {
+  if (Abstract.isElement(argument0)) {
     return {
       kind: "view",
       viewKey: newKey(),
-      element: param0,
+      element: argument0,
     };
   }
 
-  const terrain = Object.entries(param0).reduce<
+  const terrain = Object.entries(argument0).reduce<
     NonNullable<Abstract.View["terrain"]>
   >((result, [name, feature]) => {
     if (isDrain(feature)) {
@@ -275,16 +281,16 @@ export function view<T extends Record<string, Drain | Faucet>>(
     return result;
   }, {});
 
-  if (param1 === undefined) {
+  if (argument1 === undefined) {
     throw new ViewScriptBridgeError(
-      `The second argument passed to view is invalid: ${param1}`
+      `The second argument passed to view is invalid: ${argument1}`
     );
   }
 
   return {
     kind: "view",
     viewKey: newKey(),
-    element: param1(param0),
+    element: argument1(argument0),
     terrain,
   };
 }
@@ -302,52 +308,12 @@ export const browser = {
 
 export function render(rootElement: Abstract.Element): void;
 export function render(root: Abstract.View): void;
-export function render(
-  views: Record<string, Abstract.View>,
-  root: Abstract.View
-): void;
-export function render(
-  param0: Abstract.Element | Abstract.View | Record<string, Abstract.View>,
-  param1?: Abstract.View
-): void {
-  let app: Abstract.App;
-
-  const kind = "ViewScript v0.3.0 App";
-
-  if (Abstract.isElement(param0)) {
-    app = {
-      kind,
-      root: view(param0),
-    };
-  } else if (Abstract.isView(param0)) {
-    app = {
-      kind,
-      root: param0,
-    };
-  } else {
-    if (param1 === undefined) {
-      throw new ViewScriptBridgeError(
-        `The second argument passed to render is invalid: ${param1}`
-      );
-    }
-
-    app = {
-      kind,
-      root: param1,
-      views:
-        param0 &&
-        Object.entries(param0).reduce<NonNullable<Abstract.App["views"]>>(
-          (result, [name, view]) => {
-            result[view.viewKey] = {
-              ...view,
-              name,
-            };
-            return result;
-          },
-          {}
-        ),
-    };
-  }
+export function render(argument: Abstract.Element | Abstract.View): void {
+  const app: Abstract.App = {
+    kind: "ViewScript v0.3.1 App",
+    root: Abstract.isElement(argument) ? view(argument) : argument,
+    views: viewCache,
+  };
 
   window.console.log(`[VSB] 🌎 Build app:`, app);
 

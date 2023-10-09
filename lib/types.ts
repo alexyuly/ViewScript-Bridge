@@ -43,7 +43,9 @@ export type Faucet<T extends Abstract.Stream = Abstract.Stream> = {
 
 export type Source = Faucet | Abstract.Outlet;
 
-export type Properties = Record<string, Sink | Source>;
+export type ElementProperties = Record<string, Sink | Source>;
+
+export type ViewTerrain = Record<string, Drain | Faucet>;
 
 export function isDrain(node: unknown): node is Drain {
   return typeof node === "object" && node !== null && "_field" in node;
