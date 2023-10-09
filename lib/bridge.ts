@@ -17,8 +17,12 @@ import {
 
 class ViewScriptBridgeError extends Error {}
 
+function newKey() {
+  return window.crypto.randomUUID();
+}
+
 export function condition(value?: boolean): ConditionDrain {
-  const fieldKey = window.crypto.randomUUID();
+  const fieldKey = newKey();
 
   return {
     _field: {
@@ -41,7 +45,7 @@ export function condition(value?: boolean): ConditionDrain {
 }
 
 export function count(value?: number): CountDrain {
-  const fieldKey = window.crypto.randomUUID();
+  const fieldKey = newKey();
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Count", value },
@@ -68,7 +72,7 @@ export function count(value?: number): CountDrain {
 }
 
 export function text(value?: string): TextDrain {
-  const fieldKey = window.crypto.randomUUID();
+  const fieldKey = newKey();
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Text", value },
@@ -83,7 +87,7 @@ export function text(value?: string): TextDrain {
 }
 
 export function structure(value?: Abstract.Structure): StructureDrain {
-  const fieldKey = window.crypto.randomUUID();
+  const fieldKey = newKey();
 
   return {
     _field: {
@@ -103,7 +107,7 @@ export function structure(value?: Abstract.Structure): StructureDrain {
 }
 
 export function elementField(value?: Abstract.Element): ElementDrain {
-  const fieldKey = window.crypto.randomUUID();
+  const fieldKey = newKey();
 
   return {
     _field: { kind: "field", fieldKey, modelKey: "Element", value },
@@ -118,7 +122,7 @@ export function elementField(value?: Abstract.Element): ElementDrain {
 }
 
 export function collection(value?: Array<Abstract.Data>): CollectionDrain {
-  const fieldKey = window.crypto.randomUUID();
+  const fieldKey = newKey();
 
   return {
     _field: {
@@ -187,7 +191,7 @@ export function when(
 }
 
 export function stream(): Faucet {
-  return { _stream: { kind: "stream", streamKey: window.crypto.randomUUID() } };
+  return { _stream: { kind: "stream", streamKey: newKey() } };
 }
 
 export function inlet(sink: Sink): Abstract.Inlet {
@@ -249,7 +253,7 @@ export function view<T extends Record<string, Drain | Faucet>>(
   if (Abstract.isElement(param0)) {
     return {
       kind: "view",
-      viewKey: window.crypto.randomUUID(),
+      viewKey: newKey(),
       element: param0,
     };
   }
@@ -279,7 +283,7 @@ export function view<T extends Record<string, Drain | Faucet>>(
 
   return {
     kind: "view",
-    viewKey: window.crypto.randomUUID(),
+    viewKey: newKey(),
     element: param1(param0),
     terrain,
   };
