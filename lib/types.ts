@@ -35,7 +35,39 @@ export type Drain =
   | ElementDrain
   | CollectionDrain;
 
-export type Sink = Abstract.Data | Abstract.Conditional | Drain;
+export type DrainByKey<ModelKey extends string = string> =
+  ModelKey extends "Condition"
+    ? ConditionDrain
+    : ModelKey extends "Count"
+    ? CountDrain
+    : ModelKey extends "Text"
+    ? TextDrain
+    : ModelKey extends "Structure"
+    ? StructureDrain
+    : ModelKey extends "Element"
+    ? ElementDrain
+    : ModelKey extends "Collection"
+    ? CollectionDrain
+    : Drain;
+
+type DataByKey<ModelKey extends string = string> = ModelKey extends "Condition"
+  ? boolean
+  : ModelKey extends "Count"
+  ? number
+  : ModelKey extends "Text"
+  ? string
+  : ModelKey extends "Structure"
+  ? Abstract.Structure
+  : ModelKey extends "Element"
+  ? Abstract.Element
+  : ModelKey extends "Collection"
+  ? Array<Abstract.Data>
+  : Abstract.Data;
+
+export type Sink<ModelKey extends string = string> =
+  | DataByKey<ModelKey>
+  | Abstract.Conditional<ModelKey>
+  | DrainByKey<ModelKey>;
 
 export type Faucet<T extends Abstract.Stream = Abstract.Stream> = {
   _stream: T;

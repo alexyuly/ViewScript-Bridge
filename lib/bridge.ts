@@ -43,10 +43,7 @@ function inlet(sink: Sink): Abstract.Inlet {
 }
 
 function outlet(connection: Abstract.Output): Abstract.Outlet {
-  return {
-    kind: "outlet",
-    connection,
-  };
+  return { kind: "outlet", connection };
 }
 
 export function condition(value?: boolean): ConditionDrain {
@@ -239,21 +236,19 @@ export function element<T extends string | Abstract.View>(
   return {
     kind: "element",
     viewKey: isAbstractView ? view.viewKey : `<${view}>`,
-    properties:
-      properties &&
-      Object.entries(properties).reduce<
-        NonNullable<Abstract.Element["properties"]>
-      >((result, [propertyKey, property]) => {
-        result[propertyKey] = Abstract.isOutlet(property)
-          ? property
-          : isFaucet(property)
-          ? outlet({
-              kind: "output",
-              keyPath: [property._stream.streamKey],
-            })
-          : inlet(property);
-        return result;
-      }, {}),
+    properties: Object.entries(properties ?? {}).reduce<
+      NonNullable<Abstract.Element["properties"]>
+    >((result, [propertyKey, property]) => {
+      result[propertyKey] = Abstract.isOutlet(property)
+        ? property
+        : isFaucet(property)
+        ? outlet({
+            kind: "output",
+            keyPath: [property._stream.streamKey],
+          })
+        : inlet(property);
+      return result;
+    }, {}),
   };
 }
 
@@ -271,6 +266,7 @@ export function view<T extends ViewTerrain>(
       kind: "view",
       viewKey: key(),
       element: argument0,
+      terrain: {},
     };
   }
 
