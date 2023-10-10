@@ -1,15 +1,15 @@
 import { Abstract, RunningApp } from "viewscript-runtime";
 
 import {
-  CollectionDrain,
-  ConditionDrain,
-  CountDrain,
+  ArrayDrain,
+  BooleanDrain,
   ElementDrain,
   ElementProperties,
   Faucet,
+  NumberDrain,
   Sink,
+  StringDrain,
   StructureDrain,
-  TextDrain,
   ViewTerrain,
   isDrain,
   isFaucet,
@@ -42,14 +42,14 @@ function outlet(connection: Abstract.Output): Abstract.Outlet {
   return { kind: "outlet", connection };
 }
 
-export function condition(value?: boolean): ConditionDrain {
+export function boolean(value?: boolean): BooleanDrain {
   const fieldKey = key();
 
   return {
     _field: {
       kind: "field",
       fieldKey,
-      modelKey: "Condition",
+      modelKey: "Boolean",
       value,
     },
     reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
@@ -65,11 +65,11 @@ export function condition(value?: boolean): ConditionDrain {
   };
 }
 
-export function count(value?: number): CountDrain {
+export function number(value?: number): NumberDrain {
   const fieldKey = key();
 
   return {
-    _field: { kind: "field", fieldKey, modelKey: "Count", value },
+    _field: { kind: "field", fieldKey, modelKey: "Number", value },
     reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
     setTo: (nextValue) =>
       outlet({
@@ -92,11 +92,11 @@ export function count(value?: number): CountDrain {
   };
 }
 
-export function text(value?: string): TextDrain {
+export function string(value?: string): StringDrain {
   const fieldKey = key();
 
   return {
-    _field: { kind: "field", fieldKey, modelKey: "Text", value },
+    _field: { kind: "field", fieldKey, modelKey: "String", value },
     reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
     setTo: (nextValue) =>
       outlet({
@@ -142,14 +142,14 @@ export function elementField(value?: Abstract.Element): ElementDrain {
   };
 }
 
-export function collection(value?: Array<Abstract.Data>): CollectionDrain {
+export function array(value?: Array<Abstract.Data>): ArrayDrain {
   const fieldKey = key();
 
   return {
     _field: {
       kind: "field",
       fieldKey,
-      modelKey: "Collection",
+      modelKey: "Array",
       value,
     },
     reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
@@ -170,15 +170,15 @@ export function collection(value?: Array<Abstract.Data>): CollectionDrain {
 
 export function field(value: Abstract.Data) {
   if (typeof value === "boolean") {
-    return condition(value);
+    return boolean(value);
   }
 
   if (typeof value === "number") {
-    return count(value);
+    return number(value);
   }
 
   if (typeof value === "string") {
-    return text(value);
+    return string(value);
   }
 
   if (Abstract.isStructure(value)) {
@@ -190,7 +190,7 @@ export function field(value: Abstract.Data) {
   }
 
   if (value instanceof Array && value.every(Abstract.isData)) {
-    return collection(value);
+    return array(value);
   }
 
   throw new ViewScriptBridgeError(
@@ -199,7 +199,7 @@ export function field(value: Abstract.Data) {
 }
 
 export function when(
-  condition: ConditionDrain,
+  condition: BooleanDrain,
   positive: Abstract.Data,
   negative: Abstract.Data
 ): Abstract.Conditional {

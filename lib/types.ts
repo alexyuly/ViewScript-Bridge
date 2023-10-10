@@ -6,34 +6,34 @@ export type BaseDrain<T extends Abstract.Field = Abstract.Field> = {
   setTo: (nextValue: NonNullable<T["value"]>) => Abstract.Outlet;
 };
 
-export type ConditionDrain = BaseDrain<Abstract.Condition> & {
+export type BooleanDrain = BaseDrain<Abstract.BooleanField> & {
   disable: Abstract.Outlet;
   enable: Abstract.Outlet;
   toggle: Abstract.Outlet;
 };
 
-export type CountDrain = BaseDrain<Abstract.Count> & {
+export type NumberDrain = BaseDrain<Abstract.NumberField> & {
   add: (amount: number) => Abstract.Outlet;
   multiplyBy: (amount: number) => Abstract.Outlet;
 };
 
-export type TextDrain = BaseDrain<Abstract.Text>;
+export type StringDrain = BaseDrain<Abstract.StringField>;
 
 export type StructureDrain = BaseDrain<Abstract.StructureField>;
 
 export type ElementDrain = BaseDrain<Abstract.ElementField>;
 
-export type CollectionDrain = BaseDrain<Abstract.Collection> & {
+export type ArrayDrain = BaseDrain<Abstract.ArrayField> & {
   push: (item: Abstract.Data) => Abstract.Outlet;
 };
 
 export type Drain =
-  | ConditionDrain
-  | CountDrain
-  | TextDrain
+  | BooleanDrain
+  | NumberDrain
+  | StringDrain
   | StructureDrain
   | ElementDrain
-  | CollectionDrain;
+  | ArrayDrain;
 
 export type Sink = Abstract.Data | Abstract.Conditional | Drain;
 
