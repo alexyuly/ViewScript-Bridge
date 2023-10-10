@@ -220,7 +220,7 @@ export function stream(): Faucet {
 
 export function element(
   view: string | Abstract.View,
-  properties?: ElementProperties
+  properties: ElementProperties = {}
 ): Abstract.Element {
   const isAbstractView = Abstract.isView(view);
 
@@ -231,21 +231,19 @@ export function element(
   return {
     kind: "element",
     viewKey: isAbstractView ? view.viewKey : `<${view}>`,
-    properties:
-      properties &&
-      Object.entries(properties).reduce<
-        NonNullable<Abstract.Element["properties"]>
-      >((result, [propertyKey, property]) => {
-        result[propertyKey] = Abstract.isOutlet(property)
-          ? property
-          : isFaucet(property)
-          ? outlet({
-              kind: "output",
-              keyPath: [property._stream.streamKey],
-            })
-          : inlet(property);
-        return result;
-      }, {}),
+    properties: Object.entries(properties).reduce<
+      NonNullable<Abstract.Element["properties"]>
+    >((result, [propertyKey, property]) => {
+      result[propertyKey] = Abstract.isOutlet(property)
+        ? property
+        : isFaucet(property)
+        ? outlet({
+            kind: "output",
+            keyPath: [property._stream.streamKey],
+          })
+        : inlet(property);
+      return result;
+    }, {}),
   };
 }
 
@@ -263,6 +261,7 @@ export function view<T extends ViewTerrain>(
       kind: "view",
       viewKey: key(),
       element: argument0,
+      terrain: {},
     };
   }
 
