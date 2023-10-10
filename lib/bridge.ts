@@ -34,11 +34,7 @@ function inlet(sink: Sink): Abstract.Inlet {
 
   return {
     kind: "inlet",
-    connection: {
-      kind: "input",
-      modelKey: sink._field.modelKey,
-      keyPath: [sink._field.fieldKey],
-    },
+    connection: { kind: "input", keyPath: [sink._field.fieldKey] },
   };
 }
 
@@ -212,11 +208,7 @@ export function when(
 ): Abstract.Conditional {
   return {
     kind: "conditional",
-    condition: {
-      kind: "input",
-      modelKey: condition._field.modelKey,
-      keyPath: [condition._field.fieldKey],
-    },
+    condition: { kind: "input", keyPath: [condition._field.fieldKey] },
     positive: field(positive)._field,
     negative: field(negative)._field,
   };
@@ -226,19 +218,17 @@ export function stream(): Faucet {
   return { _stream: { kind: "stream", streamKey: key() } };
 }
 
-export function element<T extends string | Abstract.View>(
-  view: T,
-  properties?: ElementProperties<T>
+export function element(
+  view: string | Abstract.View,
+  properties?: ElementProperties
 ): Abstract.Element {
-  const isAbstractView = Abstract.isView(view);
-
-  if (isAbstractView) {
+  if (Abstract.isView(view) && !(view.viewKey in viewCache)) {
     viewCache[view.viewKey] = view;
   }
 
   return {
     kind: "element",
-    viewKey: isAbstractView ? view.viewKey : `<${view}>`,
+    viewKey: typeof view === "string" ? `<${view}>` : view.viewKey,
     properties:
       properties &&
       Object.entries(properties).reduce<
