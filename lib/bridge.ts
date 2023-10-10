@@ -222,13 +222,15 @@ export function element(
   view: string | Abstract.View,
   properties?: ElementProperties
 ): Abstract.Element {
-  if (Abstract.isView(view) && !(view.viewKey in viewCache)) {
+  const isAbstractView = Abstract.isView(view);
+
+  if (isAbstractView) {
     viewCache[view.viewKey] = view;
   }
 
   return {
     kind: "element",
-    viewKey: typeof view === "string" ? `<${view}>` : view.viewKey,
+    viewKey: isAbstractView ? view.viewKey : `<${view}>`,
     properties:
       properties &&
       Object.entries(properties).reduce<
