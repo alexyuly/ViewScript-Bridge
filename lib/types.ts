@@ -74,13 +74,18 @@ export type Faucet<T extends Abstract.Stream = Abstract.Stream> = {
 
 type Source = Faucet | Abstract.Outlet;
 
-export type ElementProps<T extends string | Abstract.View> = T extends string
-  ? Record<string, Sink | Source> // TODO improve this type
-  : T extends Abstract.View
-  ? Record<string, Sink | Source> // TODO improve this type
-  : never;
+// TODO consume T
+export type ElementProps<T extends string | IndexedView> = Record<
+  string,
+  Sink | Source
+>;
 
 export type ViewTerrain = Record<string, Drain | Faucet>;
+
+export type IndexedView<T extends Abstract.View = Abstract.View> = {
+  _view: T; // _view.terrain is indexed by viewKey
+  _viewTerrain: Abstract.ViewTerrain; // indexed by name
+};
 
 export function isDrain(node: unknown): node is Drain {
   return typeof node === "object" && node !== null && "_field" in node;
@@ -88,4 +93,8 @@ export function isDrain(node: unknown): node is Drain {
 
 export function isFaucet(node: unknown): node is Faucet {
   return typeof node === "object" && node !== null && "_stream" in node;
+}
+
+export function isIndexedView(node: unknown): node is IndexedView {
+  return typeof node === "object" && node !== null && "_view" in node;
 }

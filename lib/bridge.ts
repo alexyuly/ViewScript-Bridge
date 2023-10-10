@@ -7,17 +7,19 @@ import {
   ElementDrain,
   ElementProps,
   Faucet,
+  IndexedView,
   Sink,
   StructureDrain,
   TextDrain,
   ViewTerrain,
   isDrain,
   isFaucet,
+  isIndexedView,
 } from "./types";
 
 class ViewScriptBridgeError extends Error {}
 
-const viewCache: Record<string, Abstract.View> = {};
+const viewCache: Record<string, IndexedView> = {};
 
 function key() {
   return window.crypto.randomUUID();
@@ -223,19 +225,19 @@ export function stream(): Faucet {
   return { _stream: { kind: "stream", streamKey: key() } };
 }
 
-export function element<T extends string | Abstract.View>(
-  view: T,
+export function element<T extends string | IndexedView>(
+  tag: T,
   properties?: ElementProps<T>
 ): Abstract.Element {
-  const isAbstractView = Abstract.isView(view);
+  const isAbstractView = isIndexedView(tag);
 
   if (isAbstractView) {
-    viewCache[view.viewKey] = view;
+    viewCache[tag._view.viewKey] = tag;
   }
 
   return {
     kind: "element",
-    viewKey: isAbstractView ? view.viewKey : `<${view}>`,
+    viewKey: isAbstractView ? tag._view.viewKey : `<${tag}>`,
     properties: Object.entries(properties ?? {}).reduce<
       NonNullable<Abstract.Element["properties"]>
     >((result, [propertyKey, property]) => {
@@ -252,40 +254,26 @@ export function element<T extends string | Abstract.View>(
   };
 }
 
-export function view(element: Abstract.Element): Abstract.View;
+export function view(element: Abstract.Element): IndexedView;
 export function view<T extends ViewTerrain>(
   terrain: T,
   elementMaker: (terrain: T) => Abstract.Element
-): Abstract.View;
+): IndexedView;
 export function view<T extends ViewTerrain>(
   argument0: Abstract.Element | T,
   argument1?: (terrain: T) => Abstract.Element
-): Abstract.View {
+): IndexedView {
   if (Abstract.isElement(argument0)) {
     return {
-      kind: "view",
-      viewKey: key(),
-      element: argument0,
-      terrain: {},
+      _view: {
+        kind: "view",
+        viewKey: key(),
+        element: argument0,
+        terrain: {},
+      },
+      _viewTerrain: {},
     };
   }
-
-  const terrain = Object.entries(argument0).reduce<
-    NonNullable<Abstract.View["terrain"]>
-  >((result, [name, feature]) => {
-    if (isDrain(feature)) {
-      result[feature._field.fieldKey] = {
-        ...feature._field,
-        name,
-      };
-    } else {
-      result[feature._stream.streamKey] = {
-        ...feature._stream,
-        name,
-      };
-    }
-    return result;
-  }, {});
 
   if (argument1 === undefined) {
     throw new ViewScriptBridgeError(
@@ -293,11 +281,41 @@ export function view<T extends ViewTerrain>(
     );
   }
 
+  const { terrain, _viewTerrain } = Object.entries(argument0).reduce<{
+    terrain: NonNullable<Abstract.View["terrain"]>;
+    _viewTerrain: Abstract.ViewTerrain;
+  }>(
+    (result, [name, feature]) => {
+      if (isDrain(feature)) {
+        const fieldKey = feature._field.fieldKey;
+        const field = {
+          ...feature._field,
+          name,
+        };
+        result.terrain[fieldKey] = field;
+        result._viewTerrain[fieldKey] = field;
+      } else {
+        const streamKey = feature._stream.streamKey;
+        const stream = {
+          ...feature._stream,
+          name,
+        };
+        result.terrain[streamKey] = stream;
+        result._viewTerrain[streamKey] = stream;
+      }
+      return result;
+    },
+    { terrain: {}, _viewTerrain: {} }
+  );
+
   return {
-    kind: "view",
-    viewKey: key(),
-    element: argument1(argument0),
-    terrain,
+    _view: {
+      kind: "view",
+      viewKey: key(),
+      element: argument1(argument0),
+      terrain,
+    },
+    _viewTerrain,
   };
 }
 
@@ -313,12 +331,18 @@ export const browser = {
 };
 
 export function render(rootElement: Abstract.Element): void;
-export function render(root: Abstract.View): void;
-export function render(argument: Abstract.Element | Abstract.View): void {
+export function render(root: IndexedView): void;
+export function render(argument: Abstract.Element | IndexedView): void {
   const app: Abstract.App = {
     kind: "ViewScript v0.3.1 App",
-    root: Abstract.isElement(argument) ? view(argument) : argument,
-    views: viewCache,
+    root: Abstract.isElement(argument) ? view(argument)._view : argument._view,
+    views: Object.entries(viewCache).reduce<Abstract.App["views"]>(
+      (result, [viewKey, cacheEntry]) => {
+        result[viewKey] = cacheEntry._view;
+        return result;
+      },
+      {}
+    ),
   };
 
   window.console.log(`[VSB] 🌎 Build app:`, app);
