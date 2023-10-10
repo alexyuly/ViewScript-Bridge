@@ -39,10 +39,7 @@ function inlet(sink: Sink): Abstract.Inlet {
 }
 
 function outlet(connection: Abstract.Output): Abstract.Outlet {
-  return {
-    kind: "outlet",
-    connection,
-  };
+  return { kind: "outlet", connection };
 }
 
 export function condition(value?: boolean): ConditionDrain {
