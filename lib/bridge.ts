@@ -5,7 +5,7 @@ import {
   ConditionDrain,
   CountDrain,
   ElementDrain,
-  ElementProps,
+  ElementProperties,
   Faucet,
   Sink,
   StructureDrain,
@@ -225,7 +225,7 @@ export function stream(): Faucet {
 
 export function element<T extends string | Abstract.View>(
   view: T,
-  properties?: ElementProps<T>
+  properties?: ElementProperties<T>
 ): Abstract.Element {
   const isAbstractView = Abstract.isView(view);
 
