@@ -249,11 +249,11 @@ export function view(element: Abstract.Element): ElementReducer;
 export function view<T extends ViewTerrain>(
   terrain: T,
   elementMaker: (terrain: T) => Abstract.Element
-): ElementReducer;
+): ElementReducer<T>;
 export function view<T extends ViewTerrain>(
   argument0: Abstract.Element | T,
   argument1?: (terrain: T) => Abstract.Element
-): ElementReducer {
+): ElementReducer<T> {
   if (Abstract.isElement(argument0)) {
     return () => argument0;
   }
@@ -288,7 +288,7 @@ export function view<T extends ViewTerrain>(
     terrain,
   };
 
-  return (props?: ElementProperties) => element(abstractView, props);
+  return (props?: ElementProperties<T>) => element(abstractView, props);
 }
 
 export const browser = {
