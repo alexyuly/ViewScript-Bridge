@@ -310,7 +310,7 @@ export function render(argument: Abstract.Element | Abstract.View): void {
     root: Abstract.isElement(argument)
       ? {
           kind: "view",
-          viewKey: key(),
+          viewKey: "root",
           element: argument,
           terrain: {},
         }
