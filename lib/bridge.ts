@@ -281,14 +281,14 @@ export function view<T extends ViewTerrain>(
     );
   }
 
-  const view: Abstract.View = {
+  const abstractView: Abstract.View = {
     kind: "view",
     viewKey: key(),
     element: argument1(argument0),
     terrain,
   };
 
-  return (props?: ElementProperties) => element(view, props);
+  return (props?: ElementProperties) => element(abstractView, props);
 }
 
 export const browser = {
