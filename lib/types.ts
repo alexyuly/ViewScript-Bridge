@@ -45,6 +45,8 @@ export type Source = Faucet | Abstract.Outlet;
 
 export type ElementProperties = Record<string, Sink | Source>;
 
+export type ElementReducer = (props?: ElementProperties) => Abstract.Element;
+
 export type ViewTerrain = Record<string, Drain | Faucet>;
 
 export function isDrain(node: unknown): node is Drain {

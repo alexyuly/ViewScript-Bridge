@@ -5,6 +5,7 @@ import {
   BooleanDrain,
   ElementDrain,
   ElementProperties,
+  ElementReducer,
   Faucet,
   NumberDrain,
   Sink,
@@ -244,22 +245,17 @@ export function element(
   };
 }
 
-export function view(element: Abstract.Element): Abstract.View;
+export function view(element: Abstract.Element): ElementReducer;
 export function view<T extends ViewTerrain>(
   terrain: T,
   elementMaker: (terrain: T) => Abstract.Element
-): Abstract.View;
+): ElementReducer;
 export function view<T extends ViewTerrain>(
   argument0: Abstract.Element | T,
   argument1?: (terrain: T) => Abstract.Element
-): Abstract.View {
+): ElementReducer {
   if (Abstract.isElement(argument0)) {
-    return {
-      kind: "view",
-      viewKey: key(),
-      element: argument0,
-      terrain: {},
-    };
+    return () => argument0;
   }
 
   const terrain = Object.entries(argument0).reduce<
@@ -285,12 +281,14 @@ export function view<T extends ViewTerrain>(
     );
   }
 
-  return {
+  const view: Abstract.View = {
     kind: "view",
     viewKey: key(),
     element: argument1(argument0),
     terrain,
   };
+
+  return (props?: ElementProperties) => element(view, props);
 }
 
 export const browser = {
@@ -309,7 +307,14 @@ export function render(root: Abstract.View): void;
 export function render(argument: Abstract.Element | Abstract.View): void {
   const app: Abstract.App = {
     kind: "ViewScript v0.3.2 App",
-    root: Abstract.isElement(argument) ? view(argument) : argument,
+    root: Abstract.isElement(argument)
+      ? {
+          kind: "view",
+          viewKey: key(),
+          element: argument,
+          terrain: {},
+        }
+      : argument,
     views: viewCache,
   };
 
