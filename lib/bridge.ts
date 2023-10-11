@@ -306,7 +306,7 @@ export function render(rootElement: Abstract.Element): void;
 export function render(root: Abstract.View): void;
 export function render(argument: Abstract.Element | Abstract.View): void {
   const app: Abstract.App = {
-    kind: "ViewScript v0.3.2 App",
+    kind: "ViewScript v0.3.3 App",
     root: Abstract.isElement(argument)
       ? {
           kind: "view",
