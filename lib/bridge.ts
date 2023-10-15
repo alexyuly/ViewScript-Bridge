@@ -1,175 +1,165 @@
 import { Abstract, RunningApp } from "viewscript-runtime";
 
 import {
-  ArrayDrain,
-  BooleanDrain,
-  ElementDrain,
-  ElementProperties,
-  ElementReducer,
-  Faucet,
-  NumberDrain,
-  Sink,
-  StringDrain,
-  StructureDrain,
-  ViewTerrain,
-  isDrain,
-  isFaucet,
+  ArrayField,
+  BooleanField,
+  ElementField,
+  Field,
+  NumberField,
+  Stream,
+  StringField,
+  StructureField,
+  ViewProperties,
+  ViewReducer,
 } from "./types";
 
 class ViewScriptBridgeError extends Error {}
 
-const viewCache: Record<string, Abstract.View> = {};
+const branches: Record<string, Abstract.View | Abstract.Model> = {};
 
-function key() {
+function keyPlaceholder(): string {
   return window.crypto.randomUUID();
 }
 
-function inlet(sink: Sink): Abstract.Inlet {
-  if (Abstract.isData(sink)) {
-    return { kind: "inlet", connection: field(sink)._field };
-  }
+// TODO
+// function replaceKeys()
 
-  if (Abstract.isConditional(sink)) {
-    return { kind: "inlet", connection: sink };
-  }
-
+function actionReference(
+  key: string,
+  actionKey: string,
+  argument?: Abstract.DataSource
+): Abstract.ActionReference {
   return {
-    kind: "inlet",
-    connection: { kind: "input", keyPath: [sink._field.fieldKey] },
+    kind: "actionReference",
+    pathToActionKey: [key, actionKey],
+    argument,
   };
 }
 
-function outlet(connection: Abstract.Output): Abstract.Outlet {
-  return { kind: "outlet", connection };
+export function boolean(initialValue?: boolean) {
+  const key = keyPlaceholder();
+
+  const field: BooleanField = () => ({
+    kind: "fieldReference",
+    pathToFieldKey: [key],
+  });
+
+  field.kind = "field";
+  field.key = key;
+  field.modelKey = "Boolean";
+  field.initialValue = initialValue;
+  field.reset = actionReference(key, "reset");
+  field.setTo = (argument: Abstract.DataSource) =>
+    actionReference(key, "setTo", argument);
+  field.disable = actionReference(key, "disable");
+  field.enable = actionReference(key, "enable");
+  field.toggle = actionReference(key, "toggle");
+
+  return field;
 }
 
-export function boolean(value?: boolean): BooleanDrain {
-  const fieldKey = key();
+export function number(initialValue?: number) {
+  const key = keyPlaceholder();
 
-  return {
-    _field: {
-      kind: "field",
-      fieldKey,
-      modelKey: "Boolean",
-      value,
-    },
-    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue) =>
-      outlet({
-        kind: "output",
-        keyPath: [fieldKey, "setTo"],
-        argument: field(nextValue)._field,
-      }),
-    disable: outlet({ kind: "output", keyPath: [fieldKey, "disable"] }),
-    enable: outlet({ kind: "output", keyPath: [fieldKey, "enable"] }),
-    toggle: outlet({ kind: "output", keyPath: [fieldKey, "toggle"] }),
-  };
+  const field: NumberField = () => ({
+    kind: "fieldReference",
+    pathToFieldKey: [key],
+  });
+
+  field.kind = "field";
+  field.key = key;
+  field.modelKey = "Number";
+  field.initialValue = initialValue;
+  field.reset = actionReference(key, "reset");
+  field.setTo = (argument: Abstract.DataSource) =>
+    actionReference(key, "setTo", argument);
+  field.add = (argument: Abstract.DataSource) =>
+    actionReference(key, "add", argument);
+  field.multiplyBy = (argument: Abstract.DataSource) =>
+    actionReference(key, "multiplyBy", argument);
+
+  return field;
 }
 
-export function number(value?: number): NumberDrain {
-  const fieldKey = key();
+export function string(initialValue?: string) {
+  const key = keyPlaceholder();
 
-  return {
-    _field: { kind: "field", fieldKey, modelKey: "Number", value },
-    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue) =>
-      outlet({
-        kind: "output",
-        keyPath: [fieldKey, "setTo"],
-        argument: field(nextValue)._field,
-      }),
-    add: (amount) =>
-      outlet({
-        kind: "output",
-        keyPath: [fieldKey, "add"],
-        argument: field(amount)._field,
-      }),
-    multiplyBy: (amount) =>
-      outlet({
-        kind: "output",
-        keyPath: [fieldKey, "multiplyBy"],
-        argument: field(amount)._field,
-      }),
-  };
+  const field: StringField = () => ({
+    kind: "fieldReference",
+    pathToFieldKey: [key],
+  });
+
+  field.kind = "field";
+  field.key = key;
+  field.modelKey = "String";
+  field.initialValue = initialValue;
+  field.reset = actionReference(key, "reset");
+  field.setTo = (argument: Abstract.DataSource) =>
+    actionReference(key, "setTo", argument);
+
+  return field;
 }
 
-export function string(value?: string): StringDrain {
-  const fieldKey = key();
+export function structure(initialValue?: Abstract.Structure) {
+  const key = keyPlaceholder();
 
-  return {
-    _field: { kind: "field", fieldKey, modelKey: "String", value },
-    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue) =>
-      outlet({
-        kind: "output",
-        keyPath: [fieldKey, "setTo"],
-        argument: field(nextValue)._field,
-      }),
-  };
+  const field: StructureField = () => ({
+    kind: "fieldReference",
+    pathToFieldKey: [key],
+  });
+
+  field.kind = "field";
+  field.key = key;
+  field.modelKey = "Structure";
+  field.initialValue = initialValue;
+  field.reset = actionReference(key, "reset");
+  field.setTo = (argument: Abstract.DataSource) =>
+    actionReference(key, "setTo", argument);
+
+  return field;
 }
 
-export function structure(value?: Abstract.Structure): StructureDrain {
-  const fieldKey = key();
+export function elementField(initialValue?: Abstract.Element) {
+  const key = keyPlaceholder();
 
-  return {
-    _field: {
-      kind: "field",
-      fieldKey,
-      modelKey: "Structure",
-      value,
-    },
-    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue) =>
-      outlet({
-        kind: "output",
-        keyPath: [fieldKey, "setTo"],
-        argument: field(nextValue)._field,
-      }),
-  };
+  const field: ElementField = () => ({
+    kind: "fieldReference",
+    pathToFieldKey: [key],
+  });
+
+  field.kind = "field";
+  field.key = key;
+  field.modelKey = "Element";
+  field.initialValue = initialValue;
+  field.reset = actionReference(key, "reset");
+  field.setTo = (argument: Abstract.DataSource) =>
+    actionReference(key, "setTo", argument);
+
+  return field;
 }
 
-export function elementField(value?: Abstract.Element): ElementDrain {
-  const fieldKey = key();
+export function array(initialValue?: Array<Abstract.DataSource>) {
+  const key = keyPlaceholder();
 
-  return {
-    _field: { kind: "field", fieldKey, modelKey: "Element", value },
-    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue) =>
-      outlet({
-        kind: "output",
-        keyPath: [fieldKey, "setTo"],
-        argument: field(nextValue)._field,
-      }),
-  };
+  const field: ArrayField = () => ({
+    kind: "fieldReference",
+    pathToFieldKey: [key],
+  });
+
+  field.kind = "field";
+  field.key = key;
+  field.modelKey = "Array";
+  field.initialValue = initialValue;
+  field.reset = actionReference(key, "reset");
+  field.setTo = (argument: Abstract.DataSource) =>
+    actionReference(key, "setTo", argument);
+  field.push = (argument: Abstract.DataSource) =>
+    actionReference(key, "push", argument);
+
+  return field;
 }
 
-export function array(value?: Array<Abstract.Data>): ArrayDrain {
-  const fieldKey = key();
-
-  return {
-    _field: {
-      kind: "field",
-      fieldKey,
-      modelKey: "Array",
-      value,
-    },
-    reset: outlet({ kind: "output", keyPath: [fieldKey, "reset"] }),
-    setTo: (nextValue) =>
-      outlet({
-        kind: "output",
-        keyPath: [fieldKey, "setTo"],
-        argument: field(nextValue)._field,
-      }),
-    push: (item) =>
-      outlet({
-        kind: "output",
-        keyPath: [fieldKey, "push"],
-        argument: field(item)._field,
-      }),
-  };
-}
-
-export function field(value: Abstract.Data) {
+export function field(value: Abstract.Value) {
   if (typeof value === "boolean") {
     return boolean(value);
   }
@@ -190,7 +180,7 @@ export function field(value: Abstract.Data) {
     return elementField(value);
   }
 
-  if (value instanceof Array && value.every(Abstract.isData)) {
+  if (value instanceof Array && value.every(Abstract.isValue)) {
     return array(value);
   }
 
@@ -200,80 +190,63 @@ export function field(value: Abstract.Data) {
 }
 
 export function when(
-  condition: BooleanDrain,
-  positive: Abstract.Data,
-  negative: Abstract.Data
-): Abstract.Conditional {
+  condition: Abstract.DataSource,
+  positive: Abstract.DataSource,
+  negative?: Abstract.DataSource
+): Abstract.ConditionalData {
   return {
-    kind: "conditional",
-    condition: { kind: "input", keyPath: [condition._field.fieldKey] },
-    positive: field(positive)._field,
-    negative: field(negative)._field,
+    kind: "conditionalData",
+    when: condition,
+    then: positive,
+    else: negative,
   };
 }
 
-export function stream(): Faucet {
-  return { _stream: { kind: "stream", streamKey: key() } };
+export function stream(field?: Field) {
+  const key = keyPlaceholder();
+
+  const stream: Stream = (argument?: Abstract.DataSource) => ({
+    kind: "streamReference",
+    streamKey: key,
+    argument,
+  });
+
+  stream.kind = "stream";
+  stream.key = key;
+  stream.parameter = field;
+
+  return stream;
 }
 
 export function element(
   view: string | Abstract.View,
-  properties: ElementProperties = {}
+  properties: Abstract.Element["properties"] | ViewProperties = {}
 ): Abstract.Element {
   const isAbstractView = Abstract.isView(view);
 
   if (isAbstractView) {
-    viewCache[view.viewKey] = view;
+    branches[view.key] = view;
   }
 
   return {
     kind: "element",
-    viewKey: isAbstractView ? view.viewKey : `<${view}>`,
-    properties: Object.entries(properties).reduce<
-      NonNullable<Abstract.Element["properties"]>
-    >((result, [propertyKey, property]) => {
-      result[propertyKey] = Abstract.isOutlet(property)
-        ? property
-        : isFaucet(property)
-        ? outlet({
-            kind: "output",
-            keyPath: [property._stream.streamKey],
-          })
-        : inlet(property);
-      return result;
-    }, {}),
+    viewKey: isAbstractView ? view.key : `<${view}>`,
+    properties,
   };
 }
 
-export function view(element: Abstract.Element): ElementReducer;
-export function view<T extends ViewTerrain>(
+export function view(element: Abstract.Element): ViewReducer;
+export function view<T extends Abstract.View["terrain"]>(
   terrain: T,
   elementMaker: (terrain: T) => Abstract.Element
-): ElementReducer<T>;
-export function view<T extends ViewTerrain>(
+): ViewReducer<T>;
+export function view<T extends Abstract.View["terrain"]>(
   argument0: Abstract.Element | T,
   argument1?: (terrain: T) => Abstract.Element
-): ElementReducer<T> {
+): ViewReducer<T> {
   if (Abstract.isElement(argument0)) {
     return () => argument0;
   }
-
-  const terrain = Object.entries(argument0).reduce<
-    NonNullable<Abstract.View["terrain"]>
-  >((result, [name, feature]) => {
-    if (isDrain(feature)) {
-      result[feature._field.fieldKey] = {
-        ...feature._field,
-        name,
-      };
-    } else {
-      result[feature._stream.streamKey] = {
-        ...feature._stream,
-        name,
-      };
-    }
-    return result;
-  }, {});
 
   if (argument1 === undefined) {
     throw new ViewScriptBridgeError(
@@ -283,22 +256,21 @@ export function view<T extends ViewTerrain>(
 
   const abstractView: Abstract.View = {
     kind: "view",
-    viewKey: key(),
+    key: keyPlaceholder(),
     element: argument1(argument0),
-    terrain,
+    terrain: argument0,
   };
 
-  return (props?: ElementProperties<T>) => element(abstractView, props);
+  return (props?: ViewProperties<T>) => element(abstractView, props);
 }
 
 export const browser = {
   console: {
-    log: (value: any): Abstract.Outlet =>
-      outlet({
-        kind: "output",
-        keyPath: ["browser", "console", "log"],
-        argument: field(value)._field,
-      }),
+    log: (argument: Abstract.DataSource): Abstract.ActionReference => ({
+      kind: "actionReference",
+      pathToActionKey: ["browser", "console", "log"],
+      argument,
+    }),
   },
 };
 
@@ -306,16 +278,17 @@ export function render(rootElement: Abstract.Element): void;
 export function render(root: Abstract.View): void;
 export function render(argument: Abstract.Element | Abstract.View): void {
   const app: Abstract.App = {
-    kind: "ViewScript v0.3.3 App",
+    kind: "app",
+    version: "ViewScript v0.4.0",
     root: Abstract.isElement(argument)
       ? {
           kind: "view",
-          viewKey: "root",
+          key: "root",
           element: argument,
           terrain: {},
         }
       : argument,
-    views: viewCache,
+    branches,
   };
 
   window.console.log(`[VSB] 🌎 Build app:`, app);
