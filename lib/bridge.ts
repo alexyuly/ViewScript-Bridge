@@ -17,18 +17,18 @@ class ViewScriptBridgeError extends Error {}
 
 const branches: Record<string, Abstract.View | Abstract.Model> = {};
 
-function randomKey(): string {
+function uniqueValue(): string {
   return window.crypto.randomUUID();
 }
 
-function replaceKey(object: any, oldKey: string, newKey: string): void {
-  for (const key in object) {
-    if (object[key] === oldKey) {
-      object[key] = newKey;
+function replaceValue(object: any, oldValue: string, newValue: string): void {
+  Object.keys(object).forEach((key) => {
+    if (object[key] === oldValue) {
+      object[key] = newValue;
     } else if (typeof object[key] === "object" && object[key] !== null) {
-      replaceKey(object[key], oldKey, newKey);
+      replaceValue(object[key], oldValue, newValue);
     }
-  }
+  });
 }
 
 function actionReference(
@@ -44,7 +44,7 @@ function actionReference(
 }
 
 export function boolean(initialValue?: boolean) {
-  const key = randomKey();
+  const key = uniqueValue();
 
   const field: BooleanField = () => ({
     kind: "fieldReference",
@@ -66,7 +66,7 @@ export function boolean(initialValue?: boolean) {
 }
 
 export function number(initialValue?: number) {
-  const key = randomKey();
+  const key = uniqueValue();
 
   const field: NumberField = () => ({
     kind: "fieldReference",
@@ -89,7 +89,7 @@ export function number(initialValue?: number) {
 }
 
 export function string(initialValue?: string) {
-  const key = randomKey();
+  const key = uniqueValue();
 
   const field: StringField = () => ({
     kind: "fieldReference",
@@ -108,7 +108,7 @@ export function string(initialValue?: string) {
 }
 
 export function structure(initialValue?: Abstract.Structure) {
-  const key = randomKey();
+  const key = uniqueValue();
 
   const field: StructureField = () => ({
     kind: "fieldReference",
@@ -127,7 +127,7 @@ export function structure(initialValue?: Abstract.Structure) {
 }
 
 export function elementField(initialValue?: Abstract.Element) {
-  const key = randomKey();
+  const key = uniqueValue();
 
   const field: ElementField = () => ({
     kind: "fieldReference",
@@ -146,7 +146,7 @@ export function elementField(initialValue?: Abstract.Element) {
 }
 
 export function array(initialValue?: Array<Abstract.DataSource>) {
-  const key = randomKey();
+  const key = uniqueValue();
 
   const field: ArrayField = () => ({
     kind: "fieldReference",
@@ -210,7 +210,7 @@ export function when(
 }
 
 export function stream(field?: Field) {
-  const key = randomKey();
+  const key = uniqueValue();
 
   const stream: Stream = (argument?: Abstract.DataSource) => ({
     kind: "streamReference",
@@ -267,14 +267,14 @@ export function view<T extends Abstract.View["terrain"]>(
 
   const viewElement = elementMaker(terrain);
 
-  Object.entries(terrain).forEach(([name, feature]) => {
-    replaceKey(viewElement, feature.key, name);
-    replaceKey(feature, feature.key, name);
+  Object.entries(terrain).forEach(([featureName, feature]) => {
+    replaceValue(viewElement, feature.key, featureName);
+    replaceValue(feature, feature.key, featureName);
   });
 
   const abstractView: Abstract.View = {
     kind: "view",
-    key: randomKey(),
+    key: uniqueValue(),
     element: viewElement,
     terrain,
   };
