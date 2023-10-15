@@ -17,12 +17,19 @@ class ViewScriptBridgeError extends Error {}
 
 const branches: Record<string, Abstract.View | Abstract.Model> = {};
 
-function keyPlaceholder(): string {
+function randomKey(): string {
   return window.crypto.randomUUID();
 }
 
-// TODO
-// function replaceKeys()
+function replaceKey(object: any, oldKey: string, newKey: string): void {
+  for (const key in object) {
+    if (object[key] === oldKey) {
+      object[key] = newKey;
+    } else if (typeof object[key] === "object" && object[key] !== null) {
+      replaceKey(object[key], oldKey, newKey);
+    }
+  }
+}
 
 function actionReference(
   key: string,
@@ -37,7 +44,7 @@ function actionReference(
 }
 
 export function boolean(initialValue?: boolean) {
-  const key = keyPlaceholder();
+  const key = randomKey();
 
   const field: BooleanField = () => ({
     kind: "fieldReference",
@@ -59,7 +66,7 @@ export function boolean(initialValue?: boolean) {
 }
 
 export function number(initialValue?: number) {
-  const key = keyPlaceholder();
+  const key = randomKey();
 
   const field: NumberField = () => ({
     kind: "fieldReference",
@@ -82,7 +89,7 @@ export function number(initialValue?: number) {
 }
 
 export function string(initialValue?: string) {
-  const key = keyPlaceholder();
+  const key = randomKey();
 
   const field: StringField = () => ({
     kind: "fieldReference",
@@ -101,7 +108,7 @@ export function string(initialValue?: string) {
 }
 
 export function structure(initialValue?: Abstract.Structure) {
-  const key = keyPlaceholder();
+  const key = randomKey();
 
   const field: StructureField = () => ({
     kind: "fieldReference",
@@ -120,7 +127,7 @@ export function structure(initialValue?: Abstract.Structure) {
 }
 
 export function elementField(initialValue?: Abstract.Element) {
-  const key = keyPlaceholder();
+  const key = randomKey();
 
   const field: ElementField = () => ({
     kind: "fieldReference",
@@ -139,7 +146,7 @@ export function elementField(initialValue?: Abstract.Element) {
 }
 
 export function array(initialValue?: Array<Abstract.DataSource>) {
-  const key = keyPlaceholder();
+  const key = randomKey();
 
   const field: ArrayField = () => ({
     kind: "fieldReference",
@@ -185,7 +192,7 @@ export function field(value: Abstract.Value) {
   }
 
   throw new ViewScriptBridgeError(
-    `The first argument passed to field is invalid: ${value}`
+    `The argument passed to field is invalid: ${value}`
   );
 }
 
@@ -203,7 +210,7 @@ export function when(
 }
 
 export function stream(field?: Field) {
-  const key = keyPlaceholder();
+  const key = randomKey();
 
   const stream: Stream = (argument?: Abstract.DataSource) => ({
     kind: "streamReference",
@@ -245,20 +252,31 @@ export function view<T extends Abstract.View["terrain"]>(
   argument1?: (terrain: T) => Abstract.Element
 ): ViewReducer<T> {
   if (Abstract.isElement(argument0)) {
-    return () => argument0;
+    const element = argument0;
+    return () => element;
   }
 
-  if (argument1 === undefined) {
+  const terrain = argument0;
+  const elementMaker = argument1;
+
+  if (elementMaker === undefined) {
     throw new ViewScriptBridgeError(
-      `The second argument passed to view is invalid: ${argument1}`
+      `The second argument passed to view must not be undefined.`
     );
   }
 
+  const viewElement = elementMaker(terrain);
+
+  Object.entries(terrain).forEach(([name, feature]) => {
+    replaceKey(viewElement, feature.key, name);
+    replaceKey(feature, feature.key, name);
+  });
+
   const abstractView: Abstract.View = {
     kind: "view",
-    key: keyPlaceholder(),
-    element: argument1(argument0),
-    terrain: argument0,
+    key: randomKey(),
+    element: viewElement,
+    terrain,
   };
 
   return (props?: ViewProperties<T>) => element(abstractView, props);
@@ -279,7 +297,7 @@ export function render(root: Abstract.View): void;
 export function render(argument: Abstract.Element | Abstract.View): void {
   const app: Abstract.App = {
     kind: "app",
-    version: "ViewScript v0.4.0",
+    version: "ViewScript v0.3.4",
     root: Abstract.isElement(argument)
       ? {
           kind: "view",
