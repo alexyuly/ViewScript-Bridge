@@ -67,12 +67,18 @@ export function boolean(initialValue?: boolean) {
   field.key = key;
   field.modelKey = "Boolean";
   field.initialValue = initialValue;
+
   field.reset = actionReference(key, "reset");
   field.setTo = (argument: Abstract.DataSource) =>
     actionReference(key, "setTo", argument);
+
   field.disable = actionReference(key, "disable");
   field.enable = actionReference(key, "enable");
   field.toggle = actionReference(key, "toggle");
+
+  field.and = (argument: Abstract.DataSource) =>
+    methodReference(key, "and", argument);
+  field.not = methodReference(key, "not");
 
   return field;
 }
@@ -89,15 +95,20 @@ export function number(initialValue?: number) {
   field.key = key;
   field.modelKey = "Number";
   field.initialValue = initialValue;
+
   field.reset = actionReference(key, "reset");
   field.setTo = (argument: Abstract.DataSource) =>
     actionReference(key, "setTo", argument);
+
   field.add = (argument: Abstract.DataSource) =>
     actionReference(key, "add", argument);
   field.multiplyBy = (argument: Abstract.DataSource) =>
     actionReference(key, "multiplyBy", argument);
+
   field.isAtLeast = (argument: Abstract.DataSource) =>
     methodReference(key, "isAtLeast", argument);
+  field.isExactly = (argument: Abstract.DataSource) =>
+    methodReference(key, "isExactly", argument);
 
   return field;
 }
@@ -114,6 +125,7 @@ export function string(initialValue?: string) {
   field.key = key;
   field.modelKey = "String";
   field.initialValue = initialValue;
+
   field.reset = actionReference(key, "reset");
   field.setTo = (argument: Abstract.DataSource) =>
     actionReference(key, "setTo", argument);
@@ -133,6 +145,7 @@ export function structure(initialValue?: Abstract.Structure) {
   field.key = key;
   field.modelKey = "Structure";
   field.initialValue = initialValue;
+
   field.reset = actionReference(key, "reset");
   field.setTo = (argument: Abstract.DataSource) =>
     actionReference(key, "setTo", argument);
@@ -152,6 +165,7 @@ export function elementField(initialValue?: Abstract.Element) {
   field.key = key;
   field.modelKey = "Element";
   field.initialValue = initialValue;
+
   field.reset = actionReference(key, "reset");
   field.setTo = (argument: Abstract.DataSource) =>
     actionReference(key, "setTo", argument);
@@ -171,9 +185,11 @@ export function array(initialValue?: Array<Abstract.DataSource>) {
   field.key = key;
   field.modelKey = "Array";
   field.initialValue = initialValue;
+
   field.reset = actionReference(key, "reset");
   field.setTo = (argument: Abstract.DataSource) =>
     actionReference(key, "setTo", argument);
+
   field.push = (argument: Abstract.DataSource) =>
     actionReference(key, "push", argument);
 
