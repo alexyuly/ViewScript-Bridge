@@ -43,6 +43,18 @@ function actionReference(
   };
 }
 
+function methodReference(
+  key: string,
+  methodKey: string,
+  argument?: Abstract.DataSource
+): Abstract.MethodReference {
+  return {
+    kind: "methodReference",
+    pathToMethodKey: [key, methodKey],
+    argument,
+  };
+}
+
 export function boolean(initialValue?: boolean) {
   const key = uniqueValue();
 
@@ -84,6 +96,8 @@ export function number(initialValue?: number) {
     actionReference(key, "add", argument);
   field.multiplyBy = (argument: Abstract.DataSource) =>
     actionReference(key, "multiplyBy", argument);
+  field.isAtLeast = (argument: Abstract.DataSource) =>
+    methodReference(key, "isAtLeast", argument);
 
   return field;
 }
@@ -209,7 +223,7 @@ export function when(
   };
 }
 
-export function stream(field?: Field) {
+export function stream() {
   const key = uniqueValue();
 
   const stream: Stream = (argument?: Abstract.DataSource) => ({
@@ -220,7 +234,6 @@ export function stream(field?: Field) {
 
   stream.kind = "stream";
   stream.key = key;
-  stream.parameter = field;
 
   return stream;
 }

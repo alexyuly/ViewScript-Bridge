@@ -14,6 +14,7 @@ export type BooleanField = Field<Abstract.BooleanField> & {
 
 export type NumberField = Field<Abstract.NumberField> & {
   add: (argument: Abstract.DataSource) => Abstract.ActionReference;
+  isAtLeast: (argument: Abstract.DataSource) => Abstract.MethodReference;
   multiplyBy: (argument: Abstract.DataSource) => Abstract.ActionReference;
 };
 
