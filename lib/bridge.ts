@@ -267,7 +267,14 @@ export function element(
   return {
     kind: "element",
     viewKey: isAbstractView ? view.key : `<${view}>`,
-    properties,
+    properties: Object.entries(properties).reduce<
+      Abstract.Element["properties"]
+    >((result, [propertyKey, property]) => {
+      if (property !== undefined) {
+        result[propertyKey] = property;
+      }
+      return result;
+    }, {}),
   };
 }
 

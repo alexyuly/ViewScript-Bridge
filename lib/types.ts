@@ -44,7 +44,7 @@ export type Stream = Abstract.Stream & {
 export type ViewTerrain = Record<string, Abstract.Field | Abstract.Stream>;
 
 export type ViewProperties<Features extends ViewTerrain = ViewTerrain> = {
-  [Key in keyof Features]: Features[Key] extends Abstract.Stream
+  [Key in keyof Features]?: Features[Key] extends Abstract.Stream
     ? Abstract.SideEffect
     : Abstract.DataSource;
 };
