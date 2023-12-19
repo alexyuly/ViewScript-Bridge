@@ -1,8 +1,8 @@
 import { Abstract, App } from "viewscript-runtime";
 
-let props: Record<string, ReturnType<typeof value>> | undefined;
+const propsStack: Array<Record<string, ReturnType<typeof prop>>> = [];
 
-export function imply(condition: ReturnType<typeof value>) {
+export function imply(condition: ReturnType<typeof prop>) {
   const implyFirstPart = {
     then: (consequence: string) => {
       const implication = {
@@ -47,12 +47,63 @@ export function imply(condition: ReturnType<typeof value>) {
   return implyFirstPart;
 }
 
+type BoxedField = {
+  _kind: "BoxedField";
+  _name: string;
+  _field: Abstract.Field;
+  set: (value: unknown) => Abstract.Action;
+};
+
+export function prop(value: unknown) {
+  const boxedField: BoxedField = {
+    _kind: "BoxedField",
+    _name: window.crypto.randomUUID(),
+    _field: {
+      kind: "field",
+      content: {
+        kind: "rawValue",
+        value,
+      },
+    },
+    set: (value: unknown) => {
+      const action: Abstract.Action = {
+        kind: "action",
+        target: {
+          kind: "call",
+          context: {
+            kind: "field",
+            content: {
+              kind: "reference",
+              fieldName: boxedField._name,
+            },
+          },
+          actionName: "set",
+          argument: {
+            kind: "field",
+            content: {
+              kind: "rawValue",
+              value,
+            },
+          },
+        },
+      };
+      return action;
+    },
+  };
+  if (propsStack.length > 0) {
+    propsStack[propsStack.length - 1][boxedField._name] = boxedField;
+  }
+  return boxedField;
+}
+
 export function render(atom: Abstract.Atom | (() => Abstract.Atom)) {
-  props = {};
+  const innerProps: Record<string, ReturnType<typeof prop>> = {};
+  propsStack.push(innerProps);
   const renderedAtom = typeof atom === "function" ? atom() : atom;
+  propsStack.pop();
   const app: Abstract.App = {
     kind: "app",
-    innerProps: Object.values(props).reduce(
+    innerProps: Object.values(innerProps).reduce(
       (acc, prop) => {
         acc[prop._name] = prop._field;
         return acc;
@@ -107,44 +158,42 @@ export function tag(
   return atom;
 }
 
-export function value(value: unknown) {
-  const boxedField = {
-    _kind: "BoxedField",
-    _name: window.crypto.randomUUID(),
-    _field: {
-      kind: "field",
-      content: {
-        kind: "rawValue",
-        value,
+type ViewOuterProps<ViewProps> = {
+  [K in keyof ViewProps]: ViewProps[K] extends Function
+    ? Abstract.Action
+    : BoxedField;
+};
+
+export function view<ViewProps>(
+  renderer: (outerProps: ViewOuterProps<ViewProps>) => Abstract.Atom
+) {
+  const viewInstantiator = (outerProps: ViewOuterProps<ViewProps>) => {
+    const innerProps: Record<string, ReturnType<typeof prop>> = {};
+    propsStack.push(innerProps);
+    const atom = renderer(outerProps);
+    propsStack.pop();
+    const viewInstance: Abstract.ViewInstance = {
+      kind: "viewInstance",
+      view: {
+        kind: "view",
+        innerProps: Object.values(innerProps).reduce(
+          (acc, prop) => {
+            acc[prop._name] = prop._field;
+            return acc;
+          },
+          {} as Record<string, Abstract.Field>
+        ),
+        stage: [atom],
       },
-    } as Abstract.Field,
-    set: (value: unknown) => {
-      const action: Abstract.Action = {
-        kind: "action",
-        target: {
-          kind: "call",
-          context: {
-            kind: "field",
-            content: {
-              kind: "reference",
-              fieldName: boxedField._name,
-            },
-          },
-          actionName: "set",
-          argument: {
-            kind: "field",
-            content: {
-              kind: "rawValue",
-              value,
-            },
-          },
+      outerProps: Object.values(innerProps).reduce(
+        (acc, prop) => {
+          acc[prop._name] = prop._field;
+          return acc;
         },
-      };
-      return action;
-    },
-  } as const;
-  if (props) {
-    props[boxedField._name] = boxedField;
-  }
-  return boxedField;
+        {} as Record<string, Abstract.Field>
+      ),
+    };
+    return viewInstance;
+  };
+  return viewInstantiator;
 }
