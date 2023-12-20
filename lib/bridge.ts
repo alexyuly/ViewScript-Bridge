@@ -73,7 +73,7 @@ function baseProp(content: Abstract.Field["content"]): FieldProp {
         kind: "action",
         target: {
           kind: "call",
-          context: {
+          scope: {
             kind: "field",
             content: {
               kind: "reference",
@@ -104,7 +104,7 @@ function booleanProp(content: Abstract.Field["content"]): BooleanProp {
       kind: "action",
       target: {
         kind: "call",
-        context: {
+        scope: {
           kind: "field",
           content: {
             kind: "reference",
@@ -141,7 +141,7 @@ function listProp(content: Abstract.Field["content"]): ListProp {
         kind: "action",
         target: {
           kind: "call",
-          context: {
+          scope: {
             kind: "field",
             content: {
               kind: "reference",
@@ -210,7 +210,6 @@ export function render(atom: Abstract.Atom | (() => Abstract.Atom)) {
     stage: [renderedAtom],
   };
   console.log("app", app);
-  console.log("app", JSON.stringify(app));
   new App(app);
 }
 
@@ -226,107 +225,97 @@ type Props = Record<
   Data | Abstract.Action | (() => Abstract.Action | Array<Abstract.Action>)
 >;
 
-function transformProps(props: Props, reference?: boolean) {
-  return Object.entries(props).reduce(
-    (acc, [key, value]) => {
-      if (typeof value === "string") {
-        acc[key] = {
-          kind: "field",
-          content: {
-            kind: "rawValue",
-            value,
-          },
-        };
-      } else if (Abstract.isComponent(value) && value.kind === "atom") {
-        acc[key] = {
-          kind: "field",
-          content: value,
-        };
-      } else if (value instanceof Array) {
-        acc[key] = {
-          kind: "field",
-          content: {
-            kind: "rawValue",
-            value: value.map((item) => {
-              if (typeof item === "string") {
-                return {
-                  kind: "field",
-                  content: {
-                    kind: "rawValue",
-                    value: item,
-                  },
-                };
-              }
-              if (Abstract.isComponent(item) && item.kind === "atom") {
-                return {
-                  kind: "field",
-                  content: item,
-                };
-              }
-              throw new Error(
-                `Tag ${name} has invalid prop ${key}: ${JSON.stringify(value)}`
-              );
-            }),
-          },
-        };
-      } else if (Abstract.isRawObject(value) && "_implication" in value) {
-        acc[key] = {
-          kind: "field",
-          content: value._implication,
-        };
-      } else if (Abstract.isRawObject(value) && "_fieldName" in value) {
-        acc[key] = reference
-          ? {
-              kind: "field",
-              content: {
-                kind: "reference",
-                fieldName: value._fieldName,
-              },
-            }
-          : value._field;
-      } else if (Abstract.isComponent(value) && value.kind === "action") {
-        acc[key] = value;
-      } else if (typeof value === "function") {
-        const steps = value();
-        acc[key] = {
-          kind: "action",
-          target: {
-            kind: "procedure",
-            steps: steps instanceof Array ? steps : [steps],
-            parameterName: "it",
-          },
-        };
-      } else {
-        throw new Error(
-          `Tag ${name} has invalid prop ${key}: ${JSON.stringify(value)}`
-        );
-      }
-      return acc;
-    },
-    {} as Abstract.Atom["outerProps"]
-  );
-}
-
 export function tag(name: string, props: Props) {
   const atom: Abstract.Atom = {
     kind: "atom",
     tagName: name,
-    outerProps: transformProps(props, true),
+    outerProps: Object.entries(props).reduce(
+      (acc, [key, value]) => {
+        if (typeof value === "string") {
+          acc[key] = {
+            kind: "field",
+            content: {
+              kind: "rawValue",
+              value,
+            },
+          };
+        } else if (Abstract.isComponent(value) && value.kind === "atom") {
+          acc[key] = {
+            kind: "field",
+            content: value,
+          };
+        } else if (value instanceof Array) {
+          acc[key] = {
+            kind: "field",
+            content: {
+              kind: "rawValue",
+              value: value.map((item) => {
+                if (typeof item === "string") {
+                  return {
+                    kind: "field",
+                    content: {
+                      kind: "rawValue",
+                      value: item,
+                    },
+                  };
+                }
+                if (Abstract.isComponent(item) && item.kind === "atom") {
+                  return {
+                    kind: "field",
+                    content: item,
+                  };
+                }
+                throw new Error(
+                  `Tag ${name} has invalid prop ${key}: ${JSON.stringify(
+                    value
+                  )}`
+                );
+              }),
+            },
+          };
+        } else if (Abstract.isRawObject(value) && "_implication" in value) {
+          acc[key] = {
+            kind: "field",
+            content: value._implication,
+          };
+        } else if (Abstract.isRawObject(value) && "_fieldName" in value) {
+          acc[key] = {
+            kind: "field",
+            content: {
+              kind: "reference",
+              fieldName: value._fieldName,
+            },
+          };
+        } else if (Abstract.isComponent(value) && value.kind === "action") {
+          acc[key] = value;
+        } else if (typeof value === "function") {
+          const steps = value();
+          acc[key] = {
+            kind: "action",
+            target: {
+              kind: "procedure",
+              steps: steps instanceof Array ? steps : [steps],
+              parameterName: "it",
+            },
+          };
+        } else {
+          throw new Error(
+            `Tag ${name} has invalid prop ${key}: ${JSON.stringify(value)}`
+          );
+        }
+        return acc;
+      },
+      {} as Abstract.Atom["outerProps"]
+    ),
   };
   return atom;
 }
 
-type ViewOuterProps<ViewProps> = {
-  [K in keyof ViewProps]: ViewProps[K] extends Function
-    ? Abstract.Action | (() => Abstract.Action | Array<Abstract.Action>)
-    : Data;
-};
-
 // TODO Don't duplicate the view for every single instance
 export function view<ViewProps>(
-  renderer: (outerProps: ViewOuterProps<ViewProps>) => Abstract.Atom
+  renderer: (outerProps: Props) => Abstract.Atom
 ) {
-  const viewInstantiator = (outerProps: ViewOuterProps<ViewProps>) => {
+  const viewInstantiator = (outerProps: Props) => {
     const innerProps: Record<string, FieldProp> = {};
     propsStack.push(innerProps);
     const atom = renderer(outerProps);
@@ -344,7 +333,78 @@ export function view<ViewProps>(
         ),
         stage: [atom],
       },
-      outerProps: transformProps(outerProps),
+      outerProps: Object.entries(outerProps).reduce(
+        (acc, [key, value]) => {
+          if (typeof value === "string") {
+            acc[key] = {
+              kind: "field",
+              content: {
+                kind: "rawValue",
+                value,
+              },
+            };
+          } else if (Abstract.isComponent(value) && value.kind === "atom") {
+            acc[key] = {
+              kind: "field",
+              content: value,
+            };
+          } else if (value instanceof Array) {
+            acc[key] = {
+              kind: "field",
+              content: {
+                kind: "rawValue",
+                value: value.map((item) => {
+                  if (typeof item === "string") {
+                    return {
+                      kind: "field",
+                      content: {
+                        kind: "rawValue",
+                        value: item,
+                      },
+                    };
+                  }
+                  if (Abstract.isComponent(item) && item.kind === "atom") {
+                    return {
+                      kind: "field",
+                      content: item,
+                    };
+                  }
+                  throw new Error(
+                    `Tag ${name} has invalid prop ${key}: ${JSON.stringify(
+                      value
+                    )}`
+                  );
+                }),
+              },
+            };
+          } else if (Abstract.isRawObject(value) && "_implication" in value) {
+            acc[key] = {
+              kind: "field",
+              content: value._implication,
+            };
+          } else if (Abstract.isRawObject(value) && "_fieldName" in value) {
+            acc[value._fieldName] = value._field;
+          } else if (Abstract.isComponent(value) && value.kind === "action") {
+            acc[key] = value;
+          } else if (typeof value === "function") {
+            const steps = value();
+            acc[key] = {
+              kind: "action",
+              target: {
+                kind: "procedure",
+                steps: steps instanceof Array ? steps : [steps],
+                parameterName: "it",
+              },
+            };
+          } else {
+            throw new Error(
+              `Tag ${name} has invalid prop ${key}: ${JSON.stringify(value)}`
+            );
+          }
+          return acc;
+        },
+        {} as Abstract.Atom["outerProps"]
+      ),
     };
     return viewInstance;
   };
@@ -357,7 +417,7 @@ export const Event = {
     kind: "action",
     target: {
       kind: "call",
-      context: {
+      scope: {
         kind: "field",
         content: {
           kind: "reference",
@@ -369,7 +429,7 @@ export const Event = {
   } as Abstract.Action,
   target: baseProp({
     kind: "reference",
-    context: {
+    scope: {
       kind: "field",
       content: {
         kind: "reference",
@@ -385,11 +445,11 @@ export const Window = {
     get: (key: string) =>
       stringProp({
         kind: "invocation",
-        context: {
+        scope: {
           kind: "field",
           content: {
             kind: "invocation",
-            context: {
+            scope: {
               kind: "field",
               content: {
                 kind: "reference",
@@ -397,13 +457,7 @@ export const Window = {
               },
             },
             methodName: "FormData",
-            argument: {
-              kind: "field",
-              content: {
-                kind: "rawValue",
-                value: form,
-              },
-            },
+            argument: form._field,
           },
         },
         methodName: "get",
