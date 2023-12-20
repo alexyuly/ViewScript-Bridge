@@ -209,7 +209,6 @@ export function render(atom: Abstract.Atom | (() => Abstract.Atom)) {
     ),
     stage: [renderedAtom],
   };
-  console.log("app", app);
   new App(app);
 }
 
