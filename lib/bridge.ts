@@ -63,6 +63,7 @@ type StringProp = FieldProp;
 
 function baseProp(content: Abstract.Field["content"]): FieldProp {
   const boxedField: FieldProp = {
+    // TODO: Use user-provided field names instead of random UUIDs.
     _fieldName: window.crypto.randomUUID(),
     _field: {
       kind: "field",
@@ -310,7 +311,7 @@ export function tag(name: string, props: Props) {
   return atom;
 }
 
-// TODO Don't duplicate the view for every single instance
+// TODO: Don't duplicate the view for every single instance.
 export function view<ViewProps>(
   renderer: (outerProps: Props) => Abstract.Atom
 ) {
@@ -426,6 +427,7 @@ export const Event = {
       actionName: "preventDefault",
     },
   } as Abstract.Action,
+  // TODO: Create a prop which holds an HTMLFormElement and has a reset method.
   target: baseProp({
     kind: "reference",
     scope: {
