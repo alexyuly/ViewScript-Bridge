@@ -2,7 +2,7 @@ import { Abstract, App } from "viewscript-runtime";
 
 const propsStack: Array<Record<string, FieldProp>> = [];
 
-export function imply(condition: FieldProp) {
+export function when(condition: FieldProp) {
   const implyFirstPart = {
     then: (consequence: string) => {
       const implication = {
@@ -55,16 +55,23 @@ type BooleanProp = FieldProp & {
   toggle: Abstract.Action;
 };
 
+type HtmlFormElementProp = FieldProp & {
+  reset: Abstract.Action;
+};
+
 type ListProp = FieldProp & {
   push: (value: unknown) => Abstract.Action;
 };
 
 type StringProp = FieldProp;
 
-function baseProp(content: Abstract.Field["content"]): FieldProp {
+function baseProp(
+  content: Abstract.Field["content"],
+  _fieldName: string = window.crypto.randomUUID()
+): FieldProp {
   const boxedField: FieldProp = {
     // TODO: Use user-provided field names instead of random UUIDs.
-    _fieldName: window.crypto.randomUUID(),
+    _fieldName,
     _field: {
       kind: "field",
       content,
@@ -92,6 +99,28 @@ function baseProp(content: Abstract.Field["content"]): FieldProp {
         },
       };
       return action;
+    },
+  };
+  return boxedField;
+}
+
+function htmlFormElementProp(
+  content: Abstract.Field["content"],
+  _fieldName: string
+): HtmlFormElementProp {
+  const baseField = baseProp(content, _fieldName);
+  const boxedField: HtmlFormElementProp = {
+    ...baseField,
+    reset: {
+      kind: "action",
+      target: {
+        kind: "call",
+        scope: {
+          kind: "field",
+          content,
+        },
+        actionName: "reset",
+      },
     },
   };
   return boxedField;
@@ -135,6 +164,7 @@ function listProp(content: Abstract.Field["content"]): ListProp {
   const boxedField: ListProp = {
     ...baseField,
     push: (argument: unknown) => {
+      // TODO: Strengthen the type of argument to always be a RawValue.
       const isArgumentRenderable =
         Abstract.isComponent(argument) &&
         (argument.kind === "atom" || argument.kind === "viewInstance");
@@ -214,15 +244,16 @@ export function render(atom: Abstract.Atom | (() => Abstract.Atom)) {
 }
 
 type Data =
+  | boolean
   | string
   | Abstract.Atom
   | Array<Abstract.Atom>
-  | Omit<ReturnType<ReturnType<typeof imply>["then"]>, "else"> // implication
+  | Omit<ReturnType<ReturnType<typeof when>["then"]>, "else"> // implication
   | FieldProp; // reference
 
 type Props = Record<
   string,
-  Data | Abstract.Action | (() => Abstract.Action | Array<Abstract.Action>)
+  Data | Abstract.Action | (() => Array<Abstract.Action>)
 >;
 
 export function tag(name: string, props: Props) {
@@ -231,7 +262,7 @@ export function tag(name: string, props: Props) {
     tagName: name,
     outerProps: Object.entries(props).reduce(
       (acc, [key, value]) => {
-        if (typeof value === "string") {
+        if (typeof value === "boolean" || typeof value === "string") {
           acc[key] = {
             kind: "field",
             content: {
@@ -289,12 +320,11 @@ export function tag(name: string, props: Props) {
         } else if (Abstract.isComponent(value) && value.kind === "action") {
           acc[key] = value;
         } else if (typeof value === "function") {
-          const steps = value();
           acc[key] = {
             kind: "action",
             target: {
               kind: "procedure",
-              steps: steps instanceof Array ? steps : [steps],
+              steps: value(),
               parameterName: "it",
             },
           };
@@ -335,7 +365,7 @@ export function view<ViewProps>(
       },
       outerProps: Object.entries(outerProps).reduce(
         (acc, [key, value]) => {
-          if (typeof value === "string") {
+          if (typeof value === "boolean" || typeof value === "string") {
             acc[key] = {
               kind: "field",
               content: {
@@ -412,7 +442,7 @@ export function view<ViewProps>(
   return viewInstantiator;
 }
 
-export const Event = {
+export const SubmitEvent = {
   preventDefault: {
     kind: "action",
     target: {
@@ -427,48 +457,41 @@ export const Event = {
       actionName: "preventDefault",
     },
   } as Abstract.Action,
-  // TODO: Create a prop which holds an HTMLFormElement and has a reset method.
-  target: baseProp({
-    kind: "reference",
-    scope: {
-      kind: "field",
-      content: {
-        kind: "reference",
-        fieldName: "it",
+  target: htmlFormElementProp(
+    {
+      kind: "reference",
+      scope: {
+        kind: "field",
+        content: {
+          kind: "reference",
+          fieldName: "it",
+        },
       },
+      fieldName: "target",
     },
-    fieldName: "target",
-  }),
+    "target"
+  ),
 };
 
-export const Window = {
-  FormData: (form: FieldProp) => ({
-    get: (key: string) =>
-      stringProp({
-        kind: "invocation",
-        scope: {
-          kind: "field",
-          content: {
-            kind: "invocation",
-            scope: {
-              kind: "field",
-              content: {
-                kind: "reference",
-                fieldName: "window",
-              },
-            },
-            methodName: "FormData",
-            argument: form._field,
-          },
+export const FormData = (form: FieldProp) => ({
+  get: (key: string) =>
+    stringProp({
+      kind: "invocation",
+      scope: {
+        kind: "field",
+        content: {
+          kind: "invocation",
+          methodName: "FormData",
+          argument: form._field,
         },
-        methodName: "get",
-        argument: {
-          kind: "field",
-          content: {
-            kind: "rawValue",
-            value: key,
-          },
+      },
+      methodName: "get",
+      argument: {
+        kind: "field",
+        content: {
+          kind: "rawValue",
+          value: key,
         },
-      }),
-  }),
-};
+      },
+    }),
+});
