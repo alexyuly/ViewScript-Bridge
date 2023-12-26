@@ -67,7 +67,7 @@ type StringProp = FieldProp;
 
 function baseProp(
   content: Abstract.Field["content"],
-  _fieldName: string = window.crypto.randomUUID()
+  _fieldName: string = crypto.randomUUID()
 ): FieldProp {
   const boxedField: FieldProp = {
     // TODO: Use user-provided field names instead of random UUIDs.
@@ -348,9 +348,7 @@ export function tag(name: string, props: Props) {
 }
 
 // TODO: Don't duplicate the view for every single instance.
-export function view<ViewProps>(
-  renderer: (outerProps: Props) => Abstract.Atom
-) {
+export function view(renderer: (outerProps: Props) => Abstract.Atom) {
   const viewInstantiator = (outerProps: Props) => {
     const innerProps: Record<string, FieldProp> = {};
     propsStack.push(innerProps);
