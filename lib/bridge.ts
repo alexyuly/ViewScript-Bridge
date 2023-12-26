@@ -89,13 +89,15 @@ function baseProp(
             },
           },
           actionName: "set",
-          argument: {
-            kind: "field",
-            content: {
-              kind: "rawValue",
-              value: argument,
+          arguments: [
+            {
+              kind: "field",
+              content: {
+                kind: "rawValue",
+                value: argument,
+              },
             },
-          },
+          ],
         },
       };
       return action;
@@ -120,6 +122,7 @@ function htmlFormElementProp(
           content,
         },
         actionName: "reset",
+        arguments: [],
       },
     },
   };
@@ -142,6 +145,7 @@ function booleanProp(content: Abstract.Field["content"]): BooleanProp {
           },
         },
         actionName: "toggle",
+        arguments: [],
       },
     },
   };
@@ -180,15 +184,17 @@ function listProp(content: Abstract.Field["content"]): ListProp {
             },
           },
           actionName: "push",
-          argument: {
-            kind: "field",
-            content: isArgumentRenderable
-              ? (argument as Abstract.Atom | Abstract.ViewInstance)
-              : {
-                  kind: "rawValue",
-                  value: argument,
-                },
-          },
+          arguments: [
+            {
+              kind: "field",
+              content: isArgumentRenderable
+                ? (argument as Abstract.Atom | Abstract.ViewInstance)
+                : {
+                    kind: "rawValue",
+                    value: argument,
+                  },
+            },
+          ],
         },
       };
       return action;
@@ -455,6 +461,7 @@ export const SubmitEvent = {
         },
       },
       actionName: "preventDefault",
+      arguments: [],
     },
   } as Abstract.Action,
   target: htmlFormElementProp(
@@ -476,22 +483,24 @@ export const SubmitEvent = {
 export const FormData = (form: FieldProp) => ({
   get: (key: string) =>
     stringProp({
-      kind: "invocation",
+      kind: "expression",
       scope: {
         kind: "field",
         content: {
-          kind: "invocation",
+          kind: "expression",
           methodName: "FormData",
-          argument: form._field,
+          arguments: [form._field],
         },
       },
       methodName: "get",
-      argument: {
-        kind: "field",
-        content: {
-          kind: "rawValue",
-          value: key,
+      arguments: [
+        {
+          kind: "field",
+          content: {
+            kind: "rawValue",
+            value: key,
+          },
         },
-      },
+      ],
     }),
 });
