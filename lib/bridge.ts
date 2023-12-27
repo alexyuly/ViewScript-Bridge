@@ -1,6 +1,29 @@
 import { Abstract, App } from "viewscript-runtime";
 
-const propsStack: Array<Record<string, FieldProp>> = [];
+const propsStack: Array<Record<string, FieldProp | Abstract.View>> = [];
+
+export function render(atom: Abstract.Atom | (() => Abstract.Atom)) {
+  const innerProps: Record<string, FieldProp | Abstract.View> = {};
+  propsStack.push(innerProps);
+  const renderedAtom = typeof atom === "function" ? atom() : atom;
+  propsStack.pop();
+  const app: Abstract.App = {
+    kind: "app",
+    innerProps: Object.values(innerProps).reduce(
+      (acc, prop) => {
+        if ("_fieldName" in prop) {
+          acc[prop._fieldName] = prop._field;
+        } else if (Abstract.isComponent(prop) && prop.kind === "view") {
+          acc[crypto.randomUUID()] = prop;
+        }
+        return acc;
+      },
+      {} as Record<string, Abstract.Field | Abstract.View>
+    ),
+    stage: [renderedAtom],
+  };
+  new App(app);
+}
 
 export function when(condition: FieldProp) {
   const implyFirstPart = {
@@ -230,25 +253,6 @@ export function string(value: string): StringProp {
   return boxedField;
 }
 
-export function render(atom: Abstract.Atom | (() => Abstract.Atom)) {
-  const innerProps: Record<string, FieldProp> = {};
-  propsStack.push(innerProps);
-  const renderedAtom = typeof atom === "function" ? atom() : atom;
-  propsStack.pop();
-  const app: Abstract.App = {
-    kind: "app",
-    innerProps: Object.values(innerProps).reduce(
-      (acc, prop) => {
-        acc[prop._fieldName] = prop._field;
-        return acc;
-      },
-      {} as Record<string, Abstract.Field>
-    ),
-    stage: [renderedAtom],
-  };
-  new App(app);
-}
-
 type Data =
   | boolean
   | string
@@ -349,6 +353,20 @@ export function tag(name: string, props: Props) {
 
 // TODO: Don't duplicate the view for every single instance.
 export function view(renderer: (outerProps: Props) => Abstract.Atom) {
+  const innerProps: Record<string, FieldProp> = {};
+  propsStack.push(innerProps);
+  const atom = renderer({});
+  const view: Abstract.View = {
+    kind: "view",
+    innerProps: Object.values(innerProps).reduce(
+      (acc, prop) => {
+        acc[prop._fieldName] = prop._field;
+        return acc;
+      },
+      {} as Record<string, Abstract.Field>
+    ),
+    stage: [atom],
+  };
   const viewInstantiator = (outerProps: Props) => {
     const innerProps: Record<string, FieldProp> = {};
     propsStack.push(innerProps);
