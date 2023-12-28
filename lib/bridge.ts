@@ -2,16 +2,15 @@ import { Abstract, App } from "viewscript-runtime";
 
 type OuterProps = Record<
   string,
-  Data | Abstract.Action | (() => Array<Abstract.Action>)
->;
-
-type Data =
+  | Abstract.Atom
   | boolean
   | string
-  | Abstract.Atom
-  | Array<Abstract.Atom>
+  | Array<string | Abstract.Atom>
+  | BaseProp // reference
   | Omit<ReturnType<ReturnType<typeof _if>["then"]>, "else"> // implication
-  | BaseProp; // reference
+  | Abstract.Action
+  | (() => Array<Abstract.Action>) // procedure
+>;
 
 type BaseProp = {
   _fieldName: string;
@@ -33,10 +32,10 @@ type HtmlFormElementProp = BaseProp & {
   reset: Abstract.Action;
 };
 
-const propsStack: Array<Record<string, BaseProp | Abstract.View>> = [];
+const propsStack: Array<Record<string, Abstract.View | BaseProp>> = [];
 
 export function render(renderer: Abstract.Atom | (() => Abstract.Atom)) {
-  const innerProps: Record<string, BaseProp | Abstract.View> = {};
+  const innerProps: Record<string, Abstract.View | BaseProp> = {};
   propsStack.push(innerProps);
   const atom = typeof renderer === "function" ? renderer() : renderer;
   propsStack.pop();
