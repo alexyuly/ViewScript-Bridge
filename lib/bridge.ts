@@ -9,12 +9,12 @@ export function render(atom: Abstract.Atom | (() => Abstract.Atom)) {
   propsStack.pop();
   const app: Abstract.App = {
     kind: "app",
-    innerProps: Object.values(innerProps).reduce(
-      (acc, prop) => {
+    innerProps: Object.entries(innerProps).reduce(
+      (acc, [key, prop]) => {
         if ("_fieldName" in prop) {
-          acc[prop._fieldName] = prop._field;
+          acc[key] = prop._field;
         } else if (Abstract.isComponent(prop) && prop.kind === "view") {
-          acc[crypto.randomUUID()] = prop;
+          acc[key] = prop;
         }
         return acc;
       },
@@ -338,6 +338,14 @@ export function tag(name: string, props: Props) {
               parameterName: "it",
             },
           };
+        } else if (value === undefined) {
+          acc[key] = {
+            kind: "field",
+            content: {
+              kind: "reference",
+              fieldName: key,
+            },
+          };
         } else {
           throw new Error(
             `Tag ${name} has invalid prop ${key}: ${JSON.stringify(value)}`
@@ -351,11 +359,11 @@ export function tag(name: string, props: Props) {
   return atom;
 }
 
-// TODO: Don't duplicate the view for every single instance.
 export function view(renderer: (outerProps: Props) => Abstract.Atom) {
   const innerProps: Record<string, FieldProp> = {};
   propsStack.push(innerProps);
   const atom = renderer({});
+  propsStack.pop();
   const view: Abstract.View = {
     kind: "view",
     innerProps: Object.values(innerProps).reduce(
@@ -367,24 +375,12 @@ export function view(renderer: (outerProps: Props) => Abstract.Atom) {
     ),
     stage: [atom],
   };
+  const viewName = crypto.randomUUID();
+  propsStack[propsStack.length - 1][viewName] = view;
   const viewInstantiator = (outerProps: Props) => {
-    const innerProps: Record<string, FieldProp> = {};
-    propsStack.push(innerProps);
-    const atom = renderer(outerProps);
-    propsStack.pop();
     const viewInstance: Abstract.ViewInstance = {
       kind: "viewInstance",
-      view: {
-        kind: "view",
-        innerProps: Object.values(innerProps).reduce(
-          (acc, prop) => {
-            acc[prop._fieldName] = prop._field;
-            return acc;
-          },
-          {} as Record<string, Abstract.Field>
-        ),
-        stage: [atom],
-      },
+      view: viewName,
       outerProps: Object.entries(outerProps).reduce(
         (acc, [key, value]) => {
           if (typeof value === "boolean" || typeof value === "string") {
@@ -422,9 +418,7 @@ export function view(renderer: (outerProps: Props) => Abstract.Atom) {
                     };
                   }
                   throw new Error(
-                    `Tag ${name} has invalid prop ${key}: ${JSON.stringify(
-                      value
-                    )}`
+                    `Invalid prop ${key}: ${JSON.stringify(value)}`
                   );
                 }),
               },
@@ -435,7 +429,7 @@ export function view(renderer: (outerProps: Props) => Abstract.Atom) {
               content: value._implication,
             };
           } else if (Abstract.isRawObject(value) && "_fieldName" in value) {
-            acc[value._fieldName] = value._field;
+            acc[key] = value._field;
           } else if (Abstract.isComponent(value) && value.kind === "action") {
             acc[key] = value;
           } else if (typeof value === "function") {
@@ -449,9 +443,7 @@ export function view(renderer: (outerProps: Props) => Abstract.Atom) {
               },
             };
           } else {
-            throw new Error(
-              `Tag ${name} has invalid prop ${key}: ${JSON.stringify(value)}`
-            );
+            throw new Error(`Invalid prop ${key}: ${JSON.stringify(value)}`);
           }
           return acc;
         },
