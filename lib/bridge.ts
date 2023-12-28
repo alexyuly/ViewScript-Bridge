@@ -55,10 +55,14 @@ export function render(renderer: Abstract.Atom | (() => Abstract.Atom)) {
     ),
     stage: [atom],
   };
-  new App(app);
+  console.log("raw app", app);
+  console.log("hydrated app", new App(app));
 }
 
-export function view(renderer: (outerProps: OuterProps) => Abstract.Atom) {
+export function view(
+  viewName: string,
+  renderer: (outerProps: OuterProps) => Abstract.Atom
+) {
   const innerProps: Record<string, BaseProp> = {};
   propsStack.push(innerProps);
   const atom = renderer({});
@@ -74,7 +78,6 @@ export function view(renderer: (outerProps: OuterProps) => Abstract.Atom) {
     ),
     stage: [atom],
   };
-  const viewName = crypto.randomUUID();
   propsStack[propsStack.length - 1][viewName] = view;
   const viewInstantiator = (outerProps: OuterProps) => {
     const viewInstance: Abstract.ViewInstance = {
@@ -151,7 +154,6 @@ export function view(renderer: (outerProps: OuterProps) => Abstract.Atom) {
     };
     return viewInstance;
   };
-  viewInstantiator.list = () => list(crypto.randomUUID());
   return viewInstantiator;
 }
 
