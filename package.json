@@ -1,7 +1,7 @@
 {
   "name": "viewscript-bridge",
   "version": "0.4.0",
-  "description": "ViewScript's TypeScript Developer Interface",
+  "description": "An interface for JavaScript and TypeScript development using ViewScript Runtime",
   "main": "dist/index.js",
   "author": "Alexander Patrick Yuly",
   "license": "MIT",
