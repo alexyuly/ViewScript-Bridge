@@ -71,11 +71,11 @@ export const ViewInstance = (
 });
 
 export const ModelInstance = (
-  model: Abstract.ModelInstance["model"] | null,
+  model: Abstract.ModelInstance["model"],
   outerProps: Abstract.ModelInstance["outerProps"]
 ): Abstract.ModelInstance => ({
   kind: "modelInstance",
-  model: model ?? undefined,
+  model,
   outerProps,
 });
 
