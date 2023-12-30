@@ -54,7 +54,7 @@ export const Field = (
 
 export const Atom = (
   tagName: Abstract.Atom["tagName"],
-  outerProps: Abstract.Atom["outerProps"]
+  outerProps: Abstract.Atom["outerProps"] = {}
 ): Abstract.Atom => ({
   kind: "atom",
   tagName,
@@ -63,7 +63,7 @@ export const Atom = (
 
 export const ViewInstance = (
   view: Abstract.ViewInstance["view"],
-  outerProps: Abstract.ViewInstance["outerProps"]
+  outerProps: Abstract.ViewInstance["outerProps"] = {}
 ): Abstract.ViewInstance => ({
   kind: "viewInstance",
   view,
@@ -72,7 +72,7 @@ export const ViewInstance = (
 
 export const ModelInstance = (
   model: Abstract.ModelInstance["model"],
-  outerProps: Abstract.ModelInstance["outerProps"]
+  outerProps: Abstract.ModelInstance["outerProps"] = {}
 ): Abstract.ModelInstance => ({
   kind: "modelInstance",
   model,
@@ -97,12 +97,12 @@ export const Reference = (
 
 export const Expression = (
   scope: Abstract.Expression["scope"] | null,
-  method: Abstract.Expression["method"],
+  methodName: Abstract.Expression["methodName"],
   ...args: Abstract.Expression["arguments"]
 ): Abstract.Expression => ({
   kind: "expression",
   scope: scope ?? undefined,
-  method,
+  methodName,
   arguments: args,
 });
 
