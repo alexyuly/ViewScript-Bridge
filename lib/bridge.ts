@@ -145,12 +145,12 @@ export const Procedure = (
 export const Call = (
   scope: Abstract.Call["scope"] | null,
   actionName: Abstract.Call["actionName"],
-  ...args: Abstract.Call["arguments"]
+  ...args: Required<Abstract.Call>["arguments"]
 ): Abstract.Call => ({
   kind: "call",
   scope: scope ?? undefined,
   actionName,
-  arguments: args,
+  arguments: args.length > 0 ? args : undefined,
 });
 
 export const Invocation = (
