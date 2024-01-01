@@ -52,6 +52,13 @@ export const Field = (
   fallback: fallback ?? undefined,
 });
 
+export const Expectation = (
+  path: Abstract.Expectation["path"]
+): Abstract.Expectation => ({
+  kind: "expectation",
+  path,
+});
+
 export const Atom = (
   tagName: Abstract.Atom["tagName"],
   outerProps: Abstract.Atom["outerProps"] = {}
@@ -98,19 +105,12 @@ export const Reference = (
 export const Expression = (
   scope: Abstract.Expression["scope"] | null,
   methodName: Abstract.Expression["methodName"],
-  ...args: Abstract.Expression["arguments"]
+  ...args: Abstract.Expression["args"]
 ): Abstract.Expression => ({
   kind: "expression",
   scope: scope ?? undefined,
   methodName,
-  arguments: args,
-});
-
-export const Expectation = (
-  expression: Abstract.Expectation["expression"]
-): Abstract.Expectation => ({
-  kind: "expectation",
-  expression,
+  args,
 });
 
 export const Implication = (
@@ -145,12 +145,12 @@ export const Procedure = (
 export const Call = (
   scope: Abstract.Call["scope"] | null,
   actionName: Abstract.Call["actionName"],
-  ...args: Required<Abstract.Call>["arguments"]
+  ...args: Required<Abstract.Call>["args"]
 ): Abstract.Call => ({
   kind: "call",
   scope: scope ?? undefined,
   actionName,
-  arguments: args.length > 0 ? args : undefined,
+  args: args.length > 0 ? args : undefined,
 });
 
 export const Invocation = (
