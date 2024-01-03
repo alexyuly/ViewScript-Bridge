@@ -31,11 +31,11 @@ export const Model = (
 });
 
 export const Method = (
-  parameterName: Abstract.Method["parameterName"] | null,
+  params: Abstract.Method["params"],
   result: Abstract.Method["result"]
 ): Abstract.Method => ({
   kind: "method",
-  parameterName: parameterName ?? undefined,
+  params,
   result,
 });
 
@@ -113,12 +113,12 @@ export const Expression = (
   args,
 });
 
-export const Implication = (
-  condition: Abstract.Implication["condition"],
-  consequence: Abstract.Implication["consequence"],
-  alternative?: Abstract.Implication["alternative"]
-): Abstract.Implication => ({
-  kind: "implication",
+export const ConditionalField = (
+  condition: Abstract.ConditionalField["condition"],
+  consequence: Abstract.ConditionalField["consequence"],
+  alternative?: Abstract.ConditionalField["alternative"]
+): Abstract.ConditionalField => ({
+  kind: "conditionalField",
   condition,
   consequence,
   alternative: alternative ?? undefined,
@@ -134,11 +134,11 @@ export const Action = (target: Abstract.Action["target"]): Abstract.Action => ({
 });
 
 export const Procedure = (
-  parameterName: Abstract.Procedure["parameterName"] | null,
+  params: Abstract.Procedure["params"],
   ...steps: Abstract.Procedure["steps"]
 ): Abstract.Procedure => ({
   kind: "procedure",
-  parameterName: parameterName ?? undefined,
+  params,
   steps,
 });
 
@@ -162,11 +162,13 @@ export const Invocation = (
   procedure: procedure ?? undefined,
 });
 
-export const Gate = (
-  condition: Abstract.Gate["condition"],
-  consequence?: Abstract.Gate["consequence"]
-): Abstract.Gate => ({
-  kind: "gate",
+export const ConditionalAction = (
+  condition: Abstract.ConditionalAction["condition"],
+  consequence: Abstract.ConditionalAction["consequence"],
+  alternative?: Abstract.ConditionalAction["alternative"]
+): Abstract.ConditionalAction => ({
+  kind: "conditionalAction",
   condition,
-  consequence: consequence ?? undefined,
+  consequence,
+  alternative: alternative ?? undefined,
 });
