@@ -43,20 +43,9 @@ export const Method = (
  * Fields:
  */
 
-export const Field = (
-  content: Abstract.Field["content"],
-  fallback?: Abstract.Field["fallback"]
-): Abstract.Field => ({
+export const Field = (content: Abstract.Field["content"]): Abstract.Field => ({
   kind: "field",
   content,
-  fallback: fallback ?? undefined,
-});
-
-export const Expectation = (
-  path: Abstract.Expectation["path"]
-): Abstract.Expectation => ({
-  kind: "expectation",
-  path,
 });
 
 export const Atom = (
@@ -102,6 +91,17 @@ export const Reference = (
   fieldName,
 });
 
+export const Implication = (
+  condition: Abstract.Implication["condition"],
+  consequence: Abstract.Implication["consequence"],
+  alternative?: Abstract.Implication["alternative"]
+): Abstract.Implication => ({
+  kind: "implication",
+  condition,
+  consequence,
+  alternative: alternative ?? undefined,
+});
+
 export const Expression = (
   scope: Abstract.Expression["scope"] | null,
   methodName: Abstract.Expression["methodName"],
@@ -113,15 +113,13 @@ export const Expression = (
   args,
 });
 
-export const ConditionalField = (
-  condition: Abstract.ConditionalField["condition"],
-  consequence: Abstract.ConditionalField["consequence"],
-  alternative?: Abstract.ConditionalField["alternative"]
-): Abstract.ConditionalField => ({
-  kind: "conditionalField",
-  condition,
-  consequence,
-  alternative: alternative ?? undefined,
+export const Expectation = (
+  means: Abstract.Expectation["means"],
+  exception?: Abstract.Expectation["exception"]
+): Abstract.Expectation => ({
+  kind: "expectation",
+  means,
+  exception,
 });
 
 /**
@@ -153,6 +151,17 @@ export const Call = (
   args: args.length > 0 ? args : undefined,
 });
 
+export const Fork = (
+  condition: Abstract.Fork["condition"],
+  consequence: Abstract.Fork["consequence"],
+  alternative?: Abstract.Fork["alternative"]
+): Abstract.Fork => ({
+  kind: "fork",
+  condition,
+  consequence,
+  alternative: alternative ?? undefined,
+});
+
 export const Invocation = (
   prerequisite: Abstract.Invocation["prerequisite"],
   procedure?: Abstract.Invocation["procedure"]
@@ -160,15 +169,4 @@ export const Invocation = (
   kind: "invocation",
   prerequisite,
   procedure: procedure ?? undefined,
-});
-
-export const ConditionalAction = (
-  condition: Abstract.ConditionalAction["condition"],
-  consequence: Abstract.ConditionalAction["consequence"],
-  alternative?: Abstract.ConditionalAction["alternative"]
-): Abstract.ConditionalAction => ({
-  kind: "conditionalAction",
-  condition,
-  consequence,
-  alternative: alternative ?? undefined,
 });
