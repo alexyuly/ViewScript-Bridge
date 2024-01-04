@@ -1,9 +1,9 @@
 {
   "name": "viewscript-bridge",
-  "version": "0.4.0",
-  "description": "ViewScript's TypeScript Developer Interface",
+  "version": "0.5.0",
+  "description": "Provides functions returning abstract syntax trees for the ViewScript Runtime",
   "main": "dist/index.js",
-  "author": "Alex Yuly",
+  "author": "Alexander Patrick Yuly",
   "license": "MIT",
   "homepage": "https://github.com/alexyuly/ViewScript-Bridge#readme",
   "repository": {
