@@ -43,9 +43,13 @@ export const Method = (
  * Fields:
  */
 
-export const Field = (content: Abstract.Field["content"]): Abstract.Field => ({
+export const Field = (
+  content: Abstract.Field["content"],
+  fallback?: Abstract.Field["fallback"]
+): Abstract.Field => ({
   kind: "field",
   content,
+  fallback,
 });
 
 export const Atom = (
@@ -114,12 +118,10 @@ export const Expression = (
 });
 
 export const Expectation = (
-  means: Abstract.Expectation["means"],
-  exception?: Abstract.Expectation["exception"]
+  means: Abstract.Expectation["means"]
 ): Abstract.Expectation => ({
   kind: "expectation",
   means,
-  exception,
 });
 
 /**
@@ -163,10 +165,10 @@ export const Fork = (
 });
 
 export const Invocation = (
-  prerequisite: Abstract.Invocation["prerequisite"],
-  procedure?: Abstract.Invocation["procedure"]
+  request: Abstract.Invocation["request"],
+  response?: Abstract.Invocation["response"]
 ): Abstract.Invocation => ({
   kind: "invocation",
-  prerequisite,
-  procedure: procedure ?? undefined,
+  request,
+  response,
 });
