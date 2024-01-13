@@ -124,51 +124,62 @@ export const Expectation = (
   means,
 });
 
+export const Producer = (
+  ...steps: Abstract.Producer["steps"]
+): Abstract.Producer => ({
+  kind: "producer",
+  steps,
+});
+
 /**
  * Actions:
  */
 
-export const Action = (target: Abstract.Action["target"]): Abstract.Action => ({
+export const Action = (
+  params: Abstract.Action["params"],
+  handler: Abstract.Action["handler"]
+): Abstract.Action => ({
   kind: "action",
-  target,
+  params,
+  handler,
 });
 
 export const Procedure = (
-  params: Abstract.Procedure["params"],
-  ...steps: Abstract.Procedure["steps"]
+  steps: Abstract.Procedure["steps"],
+  fallback?: Abstract.Field["fallback"]
 ): Abstract.Procedure => ({
   kind: "procedure",
-  params,
   steps,
+  fallback,
 });
 
 export const Call = (
   scope: Abstract.Call["scope"] | null,
   actionName: Abstract.Call["actionName"],
-  ...args: Required<Abstract.Call>["args"]
+  ...args: Abstract.Call["args"]
 ): Abstract.Call => ({
   kind: "call",
   scope: scope ?? undefined,
   actionName,
-  args: args.length > 0 ? args : undefined,
+  args,
 });
 
-export const Fork = (
-  condition: Abstract.Fork["condition"],
-  consequence: Abstract.Fork["consequence"],
-  alternative?: Abstract.Fork["alternative"]
-): Abstract.Fork => ({
-  kind: "fork",
+export const Decision = (
+  condition: Abstract.Decision["condition"],
+  consequence: Abstract.Decision["consequence"],
+  alternative?: Abstract.Decision["alternative"]
+): Abstract.Decision => ({
+  kind: "decision",
   condition,
   consequence,
   alternative: alternative ?? undefined,
 });
 
-export const Invocation = (
-  request: Abstract.Invocation["request"],
-  response?: Abstract.Invocation["response"]
-): Abstract.Invocation => ({
-  kind: "invocation",
-  request,
-  response,
+export const Resolution = (
+  question: Abstract.Resolution["question"],
+  resolver?: Abstract.Resolution["resolver"]
+): Abstract.Resolution => ({
+  kind: "resolution",
+  question,
+  resolver,
 });
