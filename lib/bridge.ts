@@ -175,11 +175,11 @@ export const Decision = (
   alternative: alternative ?? undefined,
 });
 
-export const Resolution = (
-  question: Abstract.Resolution["question"],
-  resolver?: Abstract.Resolution["resolver"]
-): Abstract.Resolution => ({
-  kind: "resolution",
-  question,
-  resolver,
+export const Invocation = (
+  args: Abstract.Invocation["args"],
+  target?: Abstract.Invocation["target"]
+): Abstract.Invocation => ({
+  kind: "invocation",
+  args,
+  target,
 });
