@@ -124,10 +124,10 @@ export const Expectation = (
   means,
 });
 
-export const Producer = (
-  ...steps: Abstract.Producer["steps"]
-): Abstract.Producer => ({
-  kind: "producer",
+export const Emitter = (
+  ...steps: Abstract.Emitter["steps"]
+): Abstract.Emitter => ({
+  kind: "emitter",
   steps,
 });
 
