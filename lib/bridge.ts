@@ -7,12 +7,15 @@ import { Abstract, App as RuntimeApp } from "viewscript-runtime";
 export const App = (
   innerProps: Abstract.App["innerProps"],
   ...stage: Abstract.App["stage"]
-): RuntimeApp =>
-  new RuntimeApp({
+): RuntimeApp => {
+  const app = new RuntimeApp({
     kind: "app",
     innerProps,
     stage,
   });
+  console.log(app);
+  return app;
+};
 
 export const ViewTemplate = (
   innerProps: Abstract.ViewTemplate["innerProps"],
