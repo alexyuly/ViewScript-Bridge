@@ -14,19 +14,19 @@ export const App = (
     stage,
   });
 
-export const View = (
-  innerProps: Abstract.View["innerProps"],
-  ...stage: Abstract.View["stage"]
-): Abstract.View => ({
-  kind: "view",
+export const ViewTemplate = (
+  innerProps: Abstract.ViewTemplate["innerProps"],
+  ...stage: Abstract.ViewTemplate["stage"]
+): Abstract.ViewTemplate => ({
+  kind: "viewTemplate",
   innerProps,
   stage,
 });
 
-export const Model = (
-  innerProps: Abstract.Model["innerProps"]
-): Abstract.Model => ({
-  kind: "model",
+export const ModelTemplate = (
+  innerProps: Abstract.ModelTemplate["innerProps"]
+): Abstract.ModelTemplate => ({
+  kind: "modelTemplate",
   innerProps,
 });
 
@@ -61,21 +61,21 @@ export const Atom = (
   outerProps,
 });
 
-export const ViewInstance = (
-  view: Abstract.ViewInstance["view"],
-  outerProps: Abstract.ViewInstance["outerProps"] = {}
-): Abstract.ViewInstance => ({
-  kind: "viewInstance",
-  view,
+export const View = (
+  viewTemplate: Abstract.View["viewTemplate"],
+  outerProps: Abstract.View["outerProps"] = {}
+): Abstract.View => ({
+  kind: "view",
+  viewTemplate,
   outerProps,
 });
 
-export const ModelInstance = (
-  model: Abstract.ModelInstance["model"],
-  outerProps: Abstract.ModelInstance["outerProps"] = {}
-): Abstract.ModelInstance => ({
-  kind: "modelInstance",
-  model,
+export const Model = (
+  modelTemplate: Abstract.Model["modelTemplate"],
+  outerProps: Abstract.Model["outerProps"] = {}
+): Abstract.Model => ({
+  kind: "model",
+  modelTemplate,
   outerProps,
 });
 
