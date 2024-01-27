@@ -127,13 +127,6 @@ export const Expectation = (
   means,
 });
 
-export const Emitter = (
-  ...steps: Abstract.Emitter["steps"]
-): Abstract.Emitter => ({
-  kind: "emitter",
-  steps,
-});
-
 /**
  * Actions:
  */
@@ -178,11 +171,11 @@ export const Decision = (
   alternative: alternative ?? undefined,
 });
 
-export const Invocation = (
-  args: Abstract.Invocation["args"],
-  target?: Abstract.Invocation["target"]
-): Abstract.Invocation => ({
-  kind: "invocation",
-  args,
-  target,
+export const Declaration = (
+  key: Abstract.Declaration["key"] | null,
+  value: Abstract.Declaration["value"]
+): Abstract.Declaration => ({
+  kind: "declaration",
+  key: key ?? undefined,
+  value,
 });
